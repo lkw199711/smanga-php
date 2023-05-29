@@ -1,4 +1,11 @@
 <?php
+/*
+ * @Author: lkw199711 lkw199711@163.com
+ * @Date: 2023-05-13 20:17:40
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-29 20:48:38
+ * @FilePath: /php/app/Http/Controllers/Media.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -42,10 +49,11 @@ class Media extends Controller
         $defaultBrowse = $request->post('defaultBrowse');
         $removeFirst = $request->post('removeFirst');
         $direction = $request->post('direction');
+        $autoScan = $request->post('autoScan');
 
         $data = [
             'mediaName' => $mediaName, 'mediaType' => $mediaType, 'directoryFormat' => $directoryFormat,
-            'fileType' => $fileType, 'defaultBrowse' => $defaultBrowse, 'removeFirst' => $removeFirst, 'direction' => $direction
+            'fileType' => $fileType, 'defaultBrowse' => $defaultBrowse, 'removeFirst' => $removeFirst, 'direction' => $direction,
         ];
 
         return MediaSql::add($data);
@@ -73,7 +81,8 @@ class Media extends Controller
 
         return MediaSql::media_update($mediaId, $data);
     }
-    public function delete(Request $request){
+    public function delete(Request $request)
+    {
         $mediaId = $request->post('mediaId');
 
         return MediaSql::media_delete($mediaId);

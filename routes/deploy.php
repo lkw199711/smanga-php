@@ -25,3 +25,6 @@ use Illuminate\Support\Facades\DB;
 Route::any('datatest', function () {
     dump(DB::table('version')->get());
 });
+
+Route::any('test/get', [App\Http\Controllers\Test::class, 'get']);
+Route::any('test', [App\Http\Controllers\Test::class, 'test']);

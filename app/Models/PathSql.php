@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-21 11:17:02
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-29 21:16:25
  * @FilePath: /php/laravel/app/Models/PathSql.php
  */
 
@@ -27,12 +27,8 @@ class PathSql extends Model
     public $timestamps = true;
 
     const CREATED_AT = 'createTime';
-    /**
-     * 表中仅有createTime字段 重新setUpdatedAt方法置空操作 解决报错
-     */
-    public function setUpdatedAt($value)
-    {
-    }
+    const UPDATED_AT = 'updateTime';
+
     /**
      * @description: 格式化日期
      * @param {DateTimeInterface} $date

@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 01:43:27
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-27 10:26:34
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-30 00:04:10
  * @FilePath: /php/laravel/app/Console/Commands/Daemon.php
  */
 
@@ -53,8 +53,28 @@ class Daemon extends Command
 
         // 死循环进程
         while (true) {
+            // 输出时间
             echo date("Y-m-d H:i:s");
             echo "\n\r";
+
+            // 启动目录自动扫描
+            $pathArr = DB::table('path')->where('autoScan', 1)->get();
+
+            $res = shell_exec("ps -ef");
+
+            foreach ($pathArr as $val) {
+                $path = $val->path;
+                $flag = 'path-flag-'.$val->path;
+                
+                if (!strpos($res, $flag)) {
+                    $command = "monitor.sh '$path' '$flag'";
+                    pclose(popen('nohup ' . $command . ' & 2>&1', 'r'));
+                }else{
+                    // 已找到命令
+                    // dump($flag);
+                    // dump(strstr($res, $path));
+                }
+            }
 
             $configPath = getenv('SMANGA_CONFIG');
             $installLock = "$configPath/install.lock";

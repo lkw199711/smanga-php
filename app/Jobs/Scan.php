@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-21 11:55:16
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-30 00:23:47
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -37,6 +37,8 @@ class Scan implements ShouldQueue
     private $direction;
     // 移除首页
     private $removeFirst;
+    private $include;
+    private $exclude;
 
     /**
      * Create a new job instance.
@@ -69,6 +71,8 @@ class Scan implements ShouldQueue
         $this->directoryFormat = $pathInfo->directoryFormat;
         $this->direction = $pathInfo->direction;
         $this->removeFirst = $pathInfo->removeFirst;
+        $this->include = $pathInfo->include;
+        $this->exclude = $pathInfo->exclude;
 
         // 是否扫描二级目录
         if ($this->directoryFormat == 1) {
@@ -86,7 +90,7 @@ class Scan implements ShouldQueue
     {
         $mangaList = self::get_manga_list($this->path);
         foreach ($mangaList as $key => $value) {
-            scan_path($value['path'], $this->pathId, $this->mediaId);
+            self::scan_path($value['path'], $this->pathId, $this->mediaId);
         }
     }
     /**
@@ -96,6 +100,12 @@ class Scan implements ShouldQueue
      */
     protected function scan_path($path)
     {
+        // 自定义目录排除(媒体库) 其实仅排除漫画就可以 这里为节省性能 根目录不符合直接不扫描
+        if (!$this->include && $this->exclude) {
+            if (preg_match("/$this->exclude/", $path)) {
+                return;
+            }
+        }
 
         // mysql插入值空置处理 (插入空字符串会报错)
         $this->direction = $this->direction ? $this->direction : 1;
@@ -105,6 +115,16 @@ class Scan implements ShouldQueue
         $mangaList = self::get_manga_list($path);
 
         foreach ($mangaList as $key => $value) {
+            // 自定义排除目录
+            if ($this->include) {
+                if (!preg_match("/$this->include/", $value['path'])) {
+                    continue;
+                }
+            } elseif ($this->exclude) {
+                if (preg_match("/$this->exclude/", $value['path'])) {
+                    continue;
+                }
+            }
 
             $mangaData = [
                 'mediaId' => $this->mediaId,
@@ -115,19 +135,27 @@ class Scan implements ShouldQueue
                 'browseType' => $this->defaultBrowse,
                 'direction' => $this->direction,
                 'removeFirst' => $this->removeFirst
-            ];
+            ]; 
+
+            // 检查库中是否存在此漫画
+            $mangaInfo = ['code' => 0, 'request' => DB::table('manga')->where('mangaPath', $value['path'])->where('mediaId', $this->mediaId)->first()];
 
             if ($this->mediaType == 1) {
+
+                if ($mangaInfo['request']) {
+                    // 漫画已存在 且为单本 跳过此漫画
+                    continue;
+                }
                 // 单本漫画
                 $mangaData['chaptercount'] = 1;
                 // 插入漫画
                 $mangaInfo = MangaSql::add($mangaData);
-                
-                if($mangaInfo['code']==1){
-                    echo "error: 漫画 \"{$value['name']}\" 插入失败,请查询是否重复。{$mangaInfo['eMsg']}";
+
+                if ($mangaInfo['code'] == 1) {
+                    echo "error: 漫画 \"{$value['name']}\" 插入失败。{$mangaInfo['eMsg']}";
                     continue;
                 }
-                
+
                 $chapterData = [
                     'mangaId' => $mangaInfo['request']->mangaId,
                     'mediaId' => $this->mediaId,
@@ -141,19 +169,32 @@ class Scan implements ShouldQueue
 
                 ChapterSql::add($chapterData);
             } else {
-                $chapterList = self::get_chapter_list($value['path']);
                 // 普通结构
-                $mangaData['chaptercount'] = count($chapterList);
-                // 插入漫画
-                $mangaInfo = MangaSql::add($mangaData);
 
-                if($mangaInfo['code']==1){
-                    echo "error: 漫画 \"{$value['name']}\" 插入失败,请查询是否重复。{$mangaInfo['eMsg']}";
+                $chapterList = self::get_chapter_list($value['path']);
+
+                if (!$mangaInfo['request']) {
+                    // 漫画不存在则新增
+                    $mangaData['chaptercount'] = count($chapterList);
+                    // 插入漫画
+                    $mangaInfo = MangaSql::add($mangaData);
+                }
+
+
+                if ($mangaInfo['code'] == 1) {
+                    echo "error: 漫画 \"{$value['name']}\" 插入失败。{$mangaInfo['eMsg']}";
                     continue;
                 }
 
                 // 插入章节
                 foreach ($chapterList as $key => $value) {
+                    // 自定义排除目录
+                    if (!$this->include && $this->exclude) {
+                        if (preg_match("/$this->exclude/", $value['path'])) {
+                            continue;
+                        }
+                    }
+
                     $chapterData = [
                         'mangaId' => $mangaInfo['request']->mangaId,
                         'mediaId' => $this->mediaId,
