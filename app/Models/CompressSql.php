@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-18 22:49:20
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-31 20:42:43
  * @FilePath: /php/laravel/app/Models/CompressSql.php
  */
 
@@ -96,6 +96,59 @@ class CompressSql extends Model
     {
         try {
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('compressId', $compressId)->delete()];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+    /**
+     * @description: 根据路径id删除转换记录
+     * @param {*} $pathId
+     * @return {*}
+     */
+    public static function compress_delete_by_path($pathId)
+    {
+        try {
+            $res = self::join('chapter','compress.chapterId','compress.compressId')->where('pathId', $pathId)->delete();
+            return ['code' => 0, 'message' => '删除成功', 'request' => $res];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+    /**
+     * @description: 根据章节id删除转换记录
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function compress_delete_by_chapter($chapterId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+    /**
+     * @description: 根据漫画id删除转换记录
+     * @param {*} $mangaId
+     * @return {*}
+     */
+    public static function compress_delete_by_manga($mangaId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+    /**
+     * @description: 根据媒体库id删除转换记录
+     * @param {*} $mediaId
+     * @return {*}
+     */
+    public static function compress_delete_by_media($mediaId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mediaId', $mediaId)->delete()];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }

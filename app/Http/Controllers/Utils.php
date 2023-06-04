@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-17 23:35:49
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-21 23:49:56
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-31 21:19:30
  * @FilePath: /php/laravel/app/Http/Controllers/Utils.php
  */
 
@@ -164,7 +164,12 @@ class Utils extends Controller
         fclose($handle);
         return true;
     }
-    public static function updateEnv($data = array())
+    /**
+     * @description: 修改env文件的值
+     * @param {*} $data
+     * @return {*}
+     */
+    public static function update_env($data = array())
     {
         if (!count($data)) {
             return;
@@ -195,6 +200,12 @@ class Utils extends Controller
         $newContent = implode('', $newLines);
         file_put_contents($envFile, $newContent);
     }
+    /**
+     * @description: 修改nev
+     * @param {*} $key
+     * @param {*} $value
+     * @return {*}
+     */
     public static function changeEnvironmentVariable($key, $value)
     {
         $path = base_path('.env');

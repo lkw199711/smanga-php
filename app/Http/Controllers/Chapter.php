@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-19 02:23:05
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-31 19:50:02
  * @FilePath: /php/laravel/app/Http/Controllers/Chapter.php
  */
 
@@ -37,10 +37,13 @@ class Chapter extends Controller
         // 获取媒体库权限
         $mediaLimit = UserSql::get_media_limit($userId);
 
-        if ($mangaId) {
-            // 通过媒体库获取漫画
+        if ($page) {
+            // 通过媒体库获取漫画章节
             return ChapterSql::get($mangaId, $page, $pageSize, $order);
-        } else {
+        }elseif($mangaId){
+            // 无分页获取章节
+            return ChapterSql::get_nopage($mangaId, $order);
+        }else {
             // 获取全部漫画
             return ChapterSql::get_nomanga($mediaLimit, $page, $pageSize, $order);
         }
@@ -87,7 +90,7 @@ class Chapter extends Controller
                 if (array_search($compressInfo->compressStatus, ['compressing', 'compressed']) !== false) {
                     $list = Utils::get_file_list($compressInfo->compressPath);
                     return ['code' => 0, 'list' => $list, 'status' => $compressInfo->compressStatus];
-                }else{
+                } else {
                     return ['code' => 0, 'list' => [], 'status' => $compressInfo->compressStatus];
                 }
             } else {

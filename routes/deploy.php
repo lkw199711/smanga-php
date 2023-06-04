@@ -28,3 +28,7 @@ Route::any('datatest', function () {
 
 Route::any('test/get', [App\Http\Controllers\Test::class, 'get']);
 Route::any('test', [App\Http\Controllers\Test::class, 'test']);
+
+Route::get('/', function () {
+    return view('welcome');
+});

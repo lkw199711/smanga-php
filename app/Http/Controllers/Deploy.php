@@ -58,7 +58,7 @@ class Deploy extends Controller
             Utils::config_write('sql', 'database', $database);
             Utils::config_write('sql', 'port', $port);
 
-            Utils::updateEnv([
+            Utils::update_env([
                 'DB_HOST' => $ip,
                 'DB_PORT' => $port,
                 'DB_DATABASE' => $database,
@@ -85,7 +85,23 @@ class Deploy extends Controller
         $sqlUserName = Utils::config_read('sql', 'userName');
         $sqlPassWord = Utils::config_read('sql', 'passWord');
         $database = Utils::config_read('sql', 'database');
-        if (!$database) $database = 'smanga';
+        $port = Utils::config_read('sql', 'port');
+
+        // 对于可能不存在的属性 做容错
+        if (!$database) {
+            $database = 'smanga';
+            Utils::config_write('sql','database',$database);
+        }
+
+        // 将原有的config数据库设置写入 env
+        Utils::update_env([
+            'DB_HOST' => $ip,
+            'DB_PORT' => $port,
+            'DB_DATABASE' => $database,
+            'DB_USERNAME' => $userName,
+            'DB_PASSWORD' => $passWord
+        ]);
+        
         $port = Utils::config_read('sql', 'port');
 
         $link = @mysqli_connect($ip, $sqlUserName, $sqlPassWord, $database, $port)
@@ -254,7 +270,7 @@ class Deploy extends Controller
 
         // 插入自定义用户名密码
         if ($userName) {
-            if(!$passWord) $passWord = '';
+            if (!$passWord) $passWord = '';
             $passMd5 = md5($passWord);
             UserSql::add(['userName' => $userName, 'passWord' => $passMd5]);
             // $link->query("INSERT INTO `user` VALUES (1, $userName, $passMd5, NULL, NULL, NULL);");
@@ -492,7 +508,7 @@ class Deploy extends Controller
                 INDEX `jobs_queue_index`(`queue`) USING BTREE
                 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
             ");
-            
+
             VersionSql::add([
                 'version' => '3.3.0',
                 'versionDescribe' => '使用laravel重构后端;裁剪模式支持阅读朝向设置;按名称排序按照数字排序方式;新增按id排序.',
@@ -514,7 +530,7 @@ class Deploy extends Controller
                 PRIMARY KEY (`socketId`, `fd`) USING BTREE
                 ) ENGINE = MEMORY AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
             ");
-            
+
             // 创建消息表
             $link->query("CREATE TABLE IF NOT EXISTS `notice` (
                 `noticeId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -534,7 +550,7 @@ class Deploy extends Controller
                 ADD COLUMN `exclude` varchar(255) NULL COMMENT '排除匹配' AFTER `include`,
                 ADD COLUMN `updateTime` datetime(0) NULL COMMENT '更新时间' AFTER `createTime`;
             ");
-            
+
             // 新增3.3.1版本记录
             VersionSql::add([
                 'version' => '3.3.1',

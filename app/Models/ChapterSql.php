@@ -2,8 +2,8 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-17 23:49:23
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-05-31 20:51:22
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -51,6 +51,20 @@ class ChapterSql extends Model
         $res = self::where('mangaId', $mangaId)
             ->orderByRaw($orderText)
             ->paginate($pageSize, ['*'], 'page', $page);
+        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+    }
+    /**
+     * @description: 不分页获取
+     * @param {*} $mangaId
+     * @param {*} $order
+     * @return {*}
+     */
+    public static function get_nopage($mangaId, $order){
+        $orderText = self::get_order_text($order);
+
+        $res = self::where('mangaId', $mangaId)
+            ->orderByRaw($orderText)
+            ->get();
         return ['code' => 0, 'text' => '获取成功', 'list' => $res];
     }
     /**
@@ -119,6 +133,7 @@ class ChapterSql extends Model
     public static function chapter_delete($chapterId)
     {
         try {
+            CompressSql::compress_delete_by_chapter($chapterId);
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
@@ -132,6 +147,7 @@ class ChapterSql extends Model
     public static function chapter_delete_by_path($pathId)
     {
         try {
+            CompressSql::compress_delete_by_path($pathId);
             self::where('pathId', $pathId)->delete();
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
@@ -145,6 +161,7 @@ class ChapterSql extends Model
     public static function chapter_delete_by_manga($mangaId)
     {
         try {
+            CompressSql::compress_delete_by_manga($mangaId);
             self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
@@ -158,6 +175,7 @@ class ChapterSql extends Model
     public static function chapter_delete_by_media($mediaId)
     {
         try {
+            CompressSql::compress_delete_by_media($mediaId);
             self::where('mediaId', $mediaId)->delete();
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
