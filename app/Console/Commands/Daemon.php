@@ -51,6 +51,8 @@ class Daemon extends Command
         // 设置脚本无限时间执行
         set_time_limit(0);
 
+        $loopNum = 0;
+
         // 死循环进程
         while (true) {
             // 输出时间
@@ -62,8 +64,14 @@ class Daemon extends Command
             $AppPath = getenv('SMANGA_APP');
             $versionFile = "$AppPath/version";
 
+            // 未完成初次部署 等待
+            if (!is_file($installLock)) {
+                sleep(10);
+                continue;
+            }
+
             // 检查更新部署状态
-            if (is_file($installLock) && !is_file($versionFile)) {
+            if (!is_file($versionFile)) {
                 echo '执行更新部署\r\n';
                 $ip = Utils::config_read('sql', 'ip');
                 $userName = Utils::config_read('sql', 'userName');
@@ -91,25 +99,40 @@ class Daemon extends Command
             // 启动目录自动扫描
             $pathArr = DB::table('path')->where('autoScan', 1)->get();
 
-            $res = shell_exec("ps -ef");
-
             foreach ($pathArr as $val) {
                 $path = $val->path;
-                $flag = 'path-flag-' . $val->path;
+                $md5 = md5($val->path);
+                $configFileName = "/etc/auto-scan/$md5.ini";
+                $configTitle = "program:path-$md5";
+                if (!is_file($configFileName)) {
 
-                if (!strpos($res, $flag)) {
-                    $command = "monitor.sh '$path' '$flag'";
-                    pclose(popen('nohup ' . $command . ' & 2>&1', 'r'));
+                    $command = "monitor.sh '$path'";
+
+                    Utils::supervisor_write($configFileName, $configTitle, [
+                        'process_name' => '%(program_name)s_%(process_num)02d',
+                        'command' => $command,
+                        'autostart' => 'true',
+                        'autorestart' => 'true',
+                        'redirect_stderr' => 'true',
+                        'user' => 'smanga',
+                        'directory' => '/app/php',
+                        'logfile' => '/tmp/echo_time.log',
+                        'stdout_logfile' => '/tmp/echo_time.stdout.log'
+                    ]);
+
+                    exec('supervisorctl reread');
+                    exec('supervisorctl update');
+
+                    dump('未找到命令');
                 } else {
-                    // 已找到命令
-                    // dump($flag);
-                    // dump(strstr($res, $path));
+                    dump('已找到命令');
                 }
             }
 
+            $loopNum++;
 
             // 睡眠一段时间
-            sleep(10);
+            sleep(60);
         }
 
         return 0;

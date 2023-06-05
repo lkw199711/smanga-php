@@ -30,7 +30,7 @@ while read -r directory event filename; do
 
     if [[ "$event" = "CREATE" ]]; then
         # 执行PHP脚本
-        php artisan scan:auto "$directory"
+        artisan scan:auto "$directory"
     fi
 
     # if [[ "$event" = "MODIFY" || "$event" = "CREATE" || "$event" = "DELETE" ]]; then

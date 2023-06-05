@@ -98,8 +98,8 @@ class Deploy extends Controller
             'DB_HOST' => $ip,
             'DB_PORT' => $port,
             'DB_DATABASE' => $database,
-            'DB_USERNAME' => $userName,
-            'DB_PASSWORD' => $passWord
+            'DB_USERNAME' => $sqlUserName,
+            'DB_PASSWORD' => $sqlPassWord
         ]);
         
         $port = Utils::config_read('sql', 'port');
@@ -133,7 +133,7 @@ class Deploy extends Controller
                 `userId` int(11) NULL DEFAULT NULL,
                 `browseType` enum('flow','single','double') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'single',
                 `page` int(11) NULL DEFAULT NULL,
-                `pageImage` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                `pageImage` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
                 `createTime` datetime(0) NULL DEFAULT NULL,
                 PRIMARY KEY (`bookmarkId`) USING BTREE,
                 UNIQUE INDEX `opage`(`chapterId`, `page`) USING BTREE
@@ -145,11 +145,11 @@ class Deploy extends Controller
                     `mangaId` int(11) NULL DEFAULT NULL COMMENT '漫画id',
                     `mediaId` int(11) NULL DEFAULT NULL COMMENT '媒体库id',
                     `pathId` int(11) NULL DEFAULT NULL COMMENT '路径id',
-                    `chapterName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '章节名称',
-                    `chapterPath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '章节路径',
-                    `chapterType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '文件类型',
+                    `chapterName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '章节名称',
+                    `chapterPath` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '章节路径',
+                    `chapterType` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '文件类型',
                     `browseType` enum('flow','single','double') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'flow' COMMENT '浏览方式',
-                    `chapterCover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '章节封面',
+                    `chapterCover` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '章节封面',
                     `picNum` int(11) NULL DEFAULT NULL COMMENT '图片数量',
                     `createTime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
                     `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '最新修改时间',
@@ -161,7 +161,7 @@ class Deploy extends Controller
             $link->query("CREATE TABLE IF NOT EXISTS `compress`  (
                     `compressId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '转换id',
                     `compressType` enum('zip','rar','pdf','image') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '转换类型',
-                    `compressPath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '转换路径',
+                    `compressPath` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '转换路径',
                     `compressStatus` enum('uncompressed','compressing','compressed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '转换状态',
                     `createTime` datetime(0) NULL DEFAULT NULL COMMENT '转换时间',
                     `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
@@ -169,7 +169,7 @@ class Deploy extends Controller
                     `mediaId` int(11) NULL DEFAULT NULL COMMENT '媒体库id',
                     `mangaId` int(11) NULL DEFAULT NULL COMMENT '漫画id',
                     `chapterId` int(11) NULL DEFAULT NULL COMMENT '章节id',
-                    `chapterPath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '章节路径',
+                    `chapterPath` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '章节路径',
                     `userId` int(11) NULL DEFAULT NULL COMMENT '用户标识',
                     PRIMARY KEY (`compressId`) USING BTREE,
                     UNIQUE INDEX `id`(`compressId`) USING BTREE,
@@ -181,10 +181,10 @@ class Deploy extends Controller
                     `userid` int(11) NULL DEFAULT NULL COMMENT '用户id',
                     `mediaId` int(11) NULL DEFAULT NULL COMMENT '媒体库id',
                     `mangaId` int(11) NULL DEFAULT NULL COMMENT '漫画id',
-                    `mangaName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '漫画名称',
+                    `mangaName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '漫画名称',
                     `chapterId` int(11) NULL DEFAULT NULL COMMENT '章节id',
-                    `chapterName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '章节名称',
-                    `chapterPath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '章节路径',
+                    `chapterName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '章节名称',
+                    `chapterPath` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '章节路径',
                     `createTime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
                     PRIMARY KEY (`historyId`) USING BTREE
                 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
@@ -192,10 +192,10 @@ class Deploy extends Controller
             $link->query("CREATE TABLE IF NOT EXISTS `login`  (
                     `loginId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '登录记录',
                     `userId` int(11) NULL DEFAULT NULL COMMENT '用户记录',
-                    `userName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户名',
-                    `nickName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '昵称',
+                    `userName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户名',
+                    `nickName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '昵称',
                     `request` int(1) NULL DEFAULT NULL COMMENT '0->成功 1->失败',
-                    `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'ip地址',
+                    `ip` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'ip地址',
                     `loginTime` datetime(0) NULL DEFAULT NULL COMMENT '登录时间',
                     PRIMARY KEY (`loginId`) USING BTREE
                 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
@@ -204,10 +204,10 @@ class Deploy extends Controller
                     `mangaId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '漫画id',
                     `mediaId` int(11) NOT NULL COMMENT '媒体库id',
                     `pathId` int(11) NULL DEFAULT NULL COMMENT '路径id',
-                    `mangaName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '漫画名称',
-                    `mangaPath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '漫画路径',
-                    `mangaCover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '漫画封面',
-                    `chapterCount` int(255) NULL DEFAULT NULL COMMENT '章节总数',
+                    `mangaName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '漫画名称',
+                    `mangaPath` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '漫画路径',
+                    `mangaCover` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '漫画封面',
+                    `chapterCount` int(191) NULL DEFAULT NULL COMMENT '章节总数',
                     `browseType` enum('flow','single','double') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'flow' COMMENT '浏览方式',
                     `createTime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
                     `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '最后修改时间',
@@ -219,9 +219,9 @@ class Deploy extends Controller
             ");
             $link->query("CREATE TABLE IF NOT EXISTS `media`  (
                     `mediaId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '媒体库id',
-                    `mediaName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '媒体库名称',
+                    `mediaName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '媒体库名称',
                     `mediaType` int(1) NOT NULL COMMENT '媒体库类型 0->漫画 1->单本',
-                    `mediaCover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '媒体库封面',
+                    `mediaCover` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '媒体库封面',
                     `directoryFormat` int(1) NULL DEFAULT NULL COMMENT '目录格式 \r\n0 漫画 -> 章节 -> 图片\r\n1 目录 -> 漫画 -> 章节 -> 图片\r\n2 漫画 -> 图片\r\n3 目录 -> 漫画 -> 图片\r\n\r\n23为单本',
                     `fileType` int(1) NULL DEFAULT NULL COMMENT '文件类型 0->图片 1->pdf',
                     `defaultBrowse` enum('flow','single','double') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'flow' COMMENT '默认浏览类型',
@@ -237,7 +237,7 @@ class Deploy extends Controller
             $link->query("CREATE TABLE IF NOT EXISTS `path`  (
                     `pathId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '路径id',
                     `mediaId` int(11) NOT NULL COMMENT '媒体库id',
-                    `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '路径',
+                    `path` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '路径',
                     `createTime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
                     PRIMARY KEY (`pathId`) USING BTREE,
                     UNIQUE INDEX `opath`(`mediaId`, `path`) USING BTREE
@@ -245,9 +245,9 @@ class Deploy extends Controller
             ");
             $link->query("CREATE TABLE IF NOT EXISTS `user`  (
                     `userId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户id',
-                    `userName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
+                    `userName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
                     `passWord` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
-                    `nickName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '昵称',
+                    `nickName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '昵称',
                     `registerTime` datetime(0) NULL DEFAULT NULL COMMENT '注册时间',
                     `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '修改时间',
                     PRIMARY KEY (`userId`, `userName`) USING BTREE,
@@ -256,8 +256,8 @@ class Deploy extends Controller
             ");
             $link->query("CREATE TABLE IF NOT EXISTS `version` (
                 `versionId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '版本记录',
-                `versionDescribe` VARCHAR(255) NULL DEFAULT NULL COMMENT '版本描述',
-                `version` varchar(255) NULL DEFAULT NULL COMMENT 'version number',
+                `versionDescribe` VARCHAR(191) NULL DEFAULT NULL COMMENT '版本描述',
+                `version` varchar(191) NULL DEFAULT NULL COMMENT 'version number',
                 `createTime` datetime(0) NULL DEFAULT NULL COMMENT 'createTime',
                 `updateTime` datetime(0) NULL DEFAULT NULL COMMENT 'updateTime',
                 PRIMARY KEY (`versionId`) USING BTREE,
@@ -297,7 +297,7 @@ class Deploy extends Controller
 
         // 316
         if (array_search('3.1.6', $vers) === false) {
-            $link->query("ALTER TABLE user ADD `mediaLimit` varchar(255)");
+            $link->query("ALTER TABLE user ADD `mediaLimit` varchar(191)");
             $link->query("ALTER TABLE user ADD `editMedia` int(1) DEFAULT 1");
             $link->query("ALTER TABLE user ADD `editUser` int(1) DEFAULT 1");
 
@@ -351,7 +351,7 @@ class Deploy extends Controller
             $link->query("CREATE TABLE IF NOT EXISTS `config` (
                     `configId` int(0) NOT NULL AUTO_INCREMENT COMMENT '设置项主键',
                     `userId` int(0) NULL COMMENT '关联的用户id',
-                    `userName` varchar(255) NULL COMMENT '关联的用户名',
+                    `userName` varchar(191) NULL COMMENT '关联的用户名',
                     `configValue` text NULL COMMENT '设置的详细内容 json打包',
                     `createTime` datetime(0) NULL COMMENT '设置的创建时间',
                     `updateTime` datetime(0) NULL COMMENT '设置的最近升级时间',

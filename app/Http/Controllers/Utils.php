@@ -8,6 +8,7 @@
  */
 
 namespace App\Http\Controllers;
+
 use App\Models\SocketSql;
 use Illuminate\Support\Facades\Storage;
 
@@ -121,6 +122,17 @@ class Utils extends Controller
 
         self::write_ini_file($data, $file, true);
     }
+    public static function supervisor_write($file, $title, $arr)
+    {
+
+        $data = (!is_file($file) || filesize($file) == 0) ? [] : parse_ini_file($file, true);
+
+        foreach ($arr as $key => $value) {
+            $data[$title][$key] = $value;
+        }
+
+        self::write_ini_file_no_colon($data, $file, true);
+    }
     /**
      * @description: 写入ini文件
      * @param {*} $assoc_arr
@@ -151,6 +163,42 @@ class Utils extends Controller
                     }
                 } else if ($elem == "") $content .= $key2 . " = \n";
                 else $content .= $key2 . " = \"" . $elem . "\"\n";
+            }
+        }
+
+        if (!$handle = fopen($path, 'w')) {
+            return false;
+        }
+
+        if (!fwrite($handle, $content)) {
+            return false;
+        }
+        fclose($handle);
+        return true;
+    }
+    public static function write_ini_file_no_colon($assoc_arr, $path, $has_sections = FALSE)
+    {
+        $content = "";
+        if ($has_sections) {
+            foreach ($assoc_arr as $key => $elem) {
+                $content .= "[" . $key . "]\n";
+                foreach ($elem as $key2 => $elem2) {
+                    if (is_array($elem2)) {
+                        for ($i = 0; $i < count($elem2); $i++) {
+                            $content .= $key2 . "[]=" . $elem2[$i] . "\n";
+                        }
+                    } else if ($elem2 == "") $content .= $key2 . "=\n";
+                    else $content .= $key2 . "=" . $elem2 . "\n";
+                }
+            }
+        } else {
+            foreach ($assoc_arr as $key2 => $elem) {
+                if (is_array($elem)) {
+                    for ($i = 0; $i < count($elem); $i++) {
+                        $content .= $key2 . "[]=" . $elem[$i] . "\n";
+                    }
+                } else if ($elem == "") $content .= $key2 . "=\n";
+                else $content .= $key2 . "=" . $elem . "\n";
             }
         }
 
@@ -242,7 +290,7 @@ class Utils extends Controller
         $socketRes = SocketSql::get_fd_by_user($userId);
 
         $fds = $socketRes['fds'];
-        
+
         foreach ($fds as $value) {
             self::socket_send([
                 'fd' => $value,
