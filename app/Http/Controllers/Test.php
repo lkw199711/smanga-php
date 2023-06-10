@@ -15,18 +15,14 @@ use Illuminate\Support\Facades\DB;
 
 class Test extends Controller
 {
-    public function get(){
-        Scan::dispatch(123);//->onQueue('scan');
+    public function get()
+    {
+        Scan::dispatch(123); //->onQueue('scan');
     }
-    public function test(){
-        // $res = DB::table('path')->where('','like','%path%')->get();
-        $searchTerm = '/mnt/hhd-2t/00manga/00zip/123/456';
-
-        // $results = DB::select(DB::raw("SELECT * FROM path WHERE path LIKE CONCAT('%', :searchTerm, '%')"), ['searchTerm' => $searchTerm]);
-
-        $results = DB::table('path')->whereRaw(" ? LIKE CONCAT('%', path, '%')", [$searchTerm])->get();
-
-
-        dump($results);
+    public function test()
+    {
+        $tt = 123;
+        $aa = 456;
+        dump($tt);
     }
 }

@@ -23,6 +23,7 @@ Route::any('info',  function(){
 
 use Illuminate\Support\Facades\DB;
 Route::any('datatest', function () {
+    $aaa = '123';
     dump(DB::table('version')->get());
 });
 

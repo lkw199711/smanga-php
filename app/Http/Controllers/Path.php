@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-29 22:00:28
+ * @LastEditTime: 2023-06-11 01:45:40
  * @FilePath: /php/laravel/app/Http/Controllers/Path.php
  */
 
@@ -97,7 +97,10 @@ class Path extends Controller
     public function scan(Request $request)
     {
         $pathId = $request->post('pathId');
+        // 队列运行
         Scan::dispatch($pathId)->onQueue('scan');
+        // 同步执行 可调试
+        // Scan::dispatchSync($pathId);
         return ['code' => 0, 'message' => '任务添加成功', 'status' => 'scan success'];
     }
     /**
@@ -112,7 +115,10 @@ class Path extends Controller
         MangaSql::manga_delete_by_path($pathId);
         ChapterSql::chapter_delete_by_path($pathId);
 
+        // 队列运行
         Scan::dispatch($pathId)->onQueue('scan');
+        // 同步执行 可调试
+        // Scan::dispatchSync($pathId);
 
         return ['code' => 0, 'message' => '任务添加成功', 'status' => 'scan success'];
     }

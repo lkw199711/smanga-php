@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-30 00:23:47
+ * @LastEditTime: 2023-06-11 01:26:30
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -58,6 +58,8 @@ class Scan implements ShouldQueue
      */
     public function handle()
     {
+        // 设置脚本无限时间执行
+        set_time_limit(0);
         // 获取路径信息
         $pathInfo = DB::table('path')
             ->join('media', 'media.mediaId', 'path.mediaId')
@@ -347,6 +349,41 @@ class Scan implements ShouldQueue
     }
 
     /**
+     * @description: 递归遍历目录 返回第一张图片
+     * @param {*} $path
+     * @return {*}
+     */
+    private function get_first_image($path)
+    {
+        $list = array();
+
+        if (!is_dir($path)) {
+            return $list;
+        }
+
+        $dir = dir($path);
+
+        while (($file = $dir->read()) !== false) {
+            if ($file == '.' || $file == '..') continue;
+
+            $route = $path . "/" . $file;
+
+            // 添加图片
+            if (Utils::is_img($route)) {
+                return $route;
+            }
+            // 遍历所有路径
+            if (is_dir($route)) {
+                return self::get_first_image($route);
+            }
+        }
+
+        $dir->close();
+
+        return '';
+    }
+
+    /**
      * @description: 获取目录封面
      * @param {*} $path
      * @param {*} $name
@@ -364,12 +401,12 @@ class Scan implements ShouldQueue
         if (is_file($jpg)) return $png;
         if (is_file($JPG)) return $JPG;
 
-        $list = self::get_file_list($path);
+        return self::get_first_image($path);
 
-        if (count($list) > 0) {
-            return $list[0];
-        } else {
-            return '';
-        }
+        // if (count($list) > 0) {
+        //     return $list[0];
+        // } else {
+        //     return '';
+        // }
     }
 }

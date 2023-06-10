@@ -1,4 +1,11 @@
 <?php
+/*
+ * @Author: lkw199711 lkw199711@163.com
+ * @Date: 2023-06-11 01:26:56
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-06-11 01:26:56
+ * @FilePath: /smanga-php/config/queue.php
+ */
 
 return [
 
@@ -38,7 +45,7 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 90,
+            'retry_after' => 3600,
             'after_commit' => false,
         ],
 
