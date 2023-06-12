@@ -559,6 +559,28 @@ class Deploy extends Controller
             ]);
         }
 
+        //332
+        if(array_search('3.3.2', $vers) === false){
+            $link->query("CREATE TABLE NOT EXISTS `log`  (
+                `logId` int(0) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `logType` varchar(255) NOT NULL COMMENT '日志类型 error/process/operate',
+                `logLevel` int(0) NULL COMMENT '日志等级',
+                `logContent` varchar(255) NULL COMMENT '日志内容',
+                `createTime` datetime(0) NULL,
+                `updateTime` datetime(0) NULL,
+                PRIMARY KEY (`logId`)
+            );");
+
+            // 新增3.3.2版本记录
+            VersionSql::add([
+                'version' => '3.3.2',
+                'versionDescribe' => '新增日志模块',
+                'createTime' => '2023-6-12 22:16:00'
+            ]);
+        }
+
+        
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
