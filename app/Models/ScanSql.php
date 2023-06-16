@@ -3,8 +3,8 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-15 01:06:29
- * @FilePath: \lar-demo\app\Models\Log.php
+ * @LastEditTime: 2023-06-14 23:44:34
+ * @FilePath: \lar-demo\app\Models\ScanSql.php
  */
 
 namespace App\Models;
@@ -13,7 +13,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LogSql extends Model
+class ScanSql extends Model
 {
     use HasFactory;
     /**
@@ -21,8 +21,8 @@ class LogSql extends Model
      *
      * @var string
      */
-    protected $table = 'log';
-    protected $primaryKey = 'logId';
+    protected $table = 'scan';
+    protected $primaryKey = 'scanId';
     protected $guarded = [];
     protected $hidden = [];
     public $timestamps = true;
@@ -50,12 +50,26 @@ class LogSql extends Model
         return ['code' => 0, 'text' => '获取日志成功', 'list' => $res];
     }
     /**
+     * @description: 获取全部扫描记录
+     * @return {*}
+     */
+    public static function get_all(){
+        return self::select()->get();
+    }
+    /**
+     * @description: 根据pathid获取
+     * @param {*} $pathId
+     * @return {*}
+     */
+    public static function get_by_pathid($pathId){
+        return self::where('pathId',$pathId)->first();
+    }
+    /**
      * @description: 新增日志
      * @param {*} $data
      * @return {*}
      */
-    public static function add($data)
-    {
+    public static function add($data){
         try {
             return self::create($data);
         } catch (\Exception $e) {
@@ -63,14 +77,14 @@ class LogSql extends Model
         }
     }
     /**
-     * @description: 写入默认日志（流程 0级别
-     * @param {*} $logContent
+     * @description: 更新扫描记录
+     * @param {*} $pathId
+     * @param {*} $data
      * @return {*}
      */
-    public static function add_default($logContent)
-    {
+    public static function scan_update($pathId, $data){
         try {
-            return self::create(['logContent' => $logContent]);
+            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('pathId', $pathId)->update($data)];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }

@@ -90,7 +90,7 @@ class Deploy extends Controller
         // 对于可能不存在的属性 做容错
         if (!$database) {
             $database = 'smanga';
-            Utils::config_write('sql','database',$database);
+            Utils::config_write('sql', 'database', $database);
         }
 
         // 将原有的config数据库设置写入 env
@@ -101,7 +101,7 @@ class Deploy extends Controller
             'DB_USERNAME' => $sqlUserName,
             'DB_PASSWORD' => $sqlPassWord
         ]);
-        
+
         $port = Utils::config_read('sql', 'port');
 
         $link = @mysqli_connect($ip, $sqlUserName, $sqlPassWord, $database, $port)
@@ -560,11 +560,11 @@ class Deploy extends Controller
         }
 
         //332
-        if(array_search('3.3.2', $vers) === false){
-            $link->query("CREATE TABLE NOT EXISTS `log`  (
+        if (array_search('3.3.2', $vers) === false) {
+            $link->query("CREATE TABLE IF NOT EXISTS `log`  (
                 `logId` int(0) UNSIGNED NOT NULL AUTO_INCREMENT,
-                `logType` varchar(255) NOT NULL COMMENT '日志类型 error/process/operate',
-                `logLevel` int(0) NULL COMMENT '日志等级',
+                `logType` varchar(255) NOT NULL DEFAULT 'process' COMMENT '日志类型 error/process/operate',
+                `logLevel` int(0) NULL COMMENT DEFAULT 0 '日志等级',
                 `logContent` varchar(255) NULL COMMENT '日志内容',
                 `createTime` datetime(0) NULL,
                 `updateTime` datetime(0) NULL,
@@ -579,7 +579,30 @@ class Deploy extends Controller
             ]);
         }
 
-        
+        // 333
+        if (array_search('3.3.3', $vers) === false) {
+            $link->query("CREATE TABLE IF NOT EXISTS `scan`  (
+                `scanId` int(0) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `scanStatus` varchar(255) NULL,
+                `path` varchar(255) NULL,
+                `targetPath` varchar(255) NULL,
+                `pathId` int(0) NULL,
+                `scanCount` int(0) NULL,
+                `scanIndex` int(0) NULL,
+                `createTime` datetime(0) NULL,
+                `updateTime` datetime(0) NULL,
+                PRIMARY KEY (`scanId`, `pathId`)
+              ) ENGINE = MEMORY;");
+
+            // 新增3.3.3版本记录
+            VersionSql::add([
+                'version' => '3.3.3',
+                'versionDescribe' => '扫描系统做节流处理,正在进行扫描的目录不再接收扫描任务',
+                'createTime' => '2023-6-13 20:52:00'
+            ]);
+        }
+
+
 
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');

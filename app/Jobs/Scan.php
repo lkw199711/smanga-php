@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-11 01:26:30
+ * @LastEditTime: 2023-06-15 01:10:26
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -11,7 +11,9 @@ namespace App\Jobs;
 
 use App\Http\Controllers\Utils;
 use App\Models\ChapterSql;
+use App\Models\LogSql;
 use App\Models\MangaSql;
+use App\Models\ScanSql;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -76,12 +78,31 @@ class Scan implements ShouldQueue
         $this->include = $pathInfo->include;
         $this->exclude = $pathInfo->exclude;
 
+        // 如果目录正在被扫描,则放弃此次扫描任务
+        if(ScanSql::get_by_pathid($this->pathId)){
+            $params = "pathId->{$this->pathId}";
+            LogSql::add_default("路径正在扫描，放弃当前扫描任务 $params");
+            return false;
+        }
+
+        // 插入扫描记录
+        ScanSql::add([
+            'scanStatus' => 'start',
+            'path' => $this->path,
+            'pathId' => $this->pathId,
+        ]);
+
         // 是否扫描二级目录
         if ($this->directoryFormat == 1) {
             self::scan_second_path();
         } else {
             self::scan_path($this->path);
         }
+
+        // 更新扫描记录-进行中
+        ScanSql::scan_update($this->pathId, [
+            'scanStatus' => 'finish',
+        ]);
     }
 
     /**
@@ -113,8 +134,8 @@ class Scan implements ShouldQueue
         $this->direction = $this->direction ? $this->direction : 1;
         $this->removeFirst = $this->removeFirst ? $this->removeFirst : 0;
 
-
         $mangaList = self::get_manga_list($path);
+        $scanIndex = 0;
 
         foreach ($mangaList as $key => $value) {
             // 自定义排除目录
@@ -128,6 +149,14 @@ class Scan implements ShouldQueue
                 }
             }
 
+            // 更新扫描记录-进行中
+            ScanSql::scan_update($this->pathId, [
+                'scanStatus' => 'scaning',
+                'targetPath' => $value['path'],
+                'scanCount' => count($mangaList),
+                'scanIndex' => ++$scanIndex
+            ]);
+
             $mangaData = [
                 'mediaId' => $this->mediaId,
                 'pathId' => $this->pathId,
@@ -137,7 +166,7 @@ class Scan implements ShouldQueue
                 'browseType' => $this->defaultBrowse,
                 'direction' => $this->direction,
                 'removeFirst' => $this->removeFirst
-            ]; 
+            ];
 
             // 检查库中是否存在此漫画
             $mangaInfo = ['code' => 0, 'request' => DB::table('manga')->where('mangaPath', $value['path'])->where('mediaId', $this->mediaId)->first()];
@@ -196,6 +225,12 @@ class Scan implements ShouldQueue
                             continue;
                         }
                     }
+
+                    // 更新扫描记录-进行中
+                    ScanSql::scan_update($this->pathId, [
+                        'scanStatus' => 'scaning',
+                        'targetPath' => $value['path'],
+                    ]);
 
                     $chapterData = [
                         'mangaId' => $mangaInfo['request']->mangaId,

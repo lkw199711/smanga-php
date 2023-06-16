@@ -3,11 +3,12 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-13 01:50:59
+ * @LastEditTime: 2023-06-15 01:01:47
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
 use App\Models\LogSql;
+use App\Models\ScanSql;
 use Illuminate\Support\Facades\Route;
 
 Route::post('deploy/database-test', [App\Http\Controllers\Deploy::class, 'database_test']);
@@ -39,10 +40,24 @@ Route::get('/', function () {
 Route::any('test/log', function () {
     // 新增一条日志
     LogSql::add([
-        'logType' => 'process',
-        'logLevel' => 2,
-        'logContent' => '这是一条流程日志,他是在系统操作过程中生成的,表示系统正在工作的流程'
+        // 'logType' => 'process',
+        // 'logLevel' => 5,
+        'logContent' => '这是一条测试日志，查看默认值设置是否生效'
     ]);
 
     return '日志添加成功';
+});
+
+Route::any('test/scan', function () {
+    // 新增一条日志
+    return ScanSql::add([
+        'scanStatus' => 'start',
+        'path' => '/123/345',
+        'pathId' => '111',
+        'targetPath' => '456/234453',
+        'scanCount' => 1000,
+        'scanIndex' => 8
+    ]);
+
+    // return '日志扫描记录成功';
 });
