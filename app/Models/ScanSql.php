@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-14 23:44:34
+ * @LastEditTime: 2023-06-17 14:41:43
  * @FilePath: \lar-demo\app\Models\ScanSql.php
  */
 
@@ -53,7 +53,8 @@ class ScanSql extends Model
      * @description: 获取全部扫描记录
      * @return {*}
      */
-    public static function get_all(){
+    public static function get_all()
+    {
         return self::select()->get();
     }
     /**
@@ -61,15 +62,17 @@ class ScanSql extends Model
      * @param {*} $pathId
      * @return {*}
      */
-    public static function get_by_pathid($pathId){
-        return self::where('pathId',$pathId)->first();
+    public static function get_by_pathid($pathId)
+    {
+        return self::where('pathId', $pathId)->first();
     }
     /**
      * @description: 新增日志
      * @param {*} $data
      * @return {*}
      */
-    public static function add($data){
+    public static function add($data)
+    {
         try {
             return self::create($data);
         } catch (\Exception $e) {
@@ -82,9 +85,23 @@ class ScanSql extends Model
      * @param {*} $data
      * @return {*}
      */
-    public static function scan_update($pathId, $data){
+    public static function scan_update($pathId, $data)
+    {
         try {
             return ['code' => 0, 'message' => '修改成功', 'request' => self::where('pathId', $pathId)->update($data)];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+    /**
+     * @description: 删除扫描记录
+     * @param {*} $scanId
+     * @return {*}
+     */
+    public static function scan_delete($scanId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($scanId)];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }

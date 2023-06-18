@@ -3,7 +3,7 @@
  # @Author: lkw199711 lkw199711@163.com
  # @Date: 2023-05-28 16:10:26
  # @LastEditors: lkw199711 lkw199711@163.com
- # @LastEditTime: 2023-05-29 23:56:49
+ # @LastEditTime: 2023-06-18 15:37:20
  # @FilePath: /php/monitor.sh
 ### 
 
@@ -30,7 +30,7 @@ while read -r directory event filename; do
 
     if [[ "$event" = "CREATE" ]]; then
         # 执行PHP脚本
-        artisan scan:auto "$directory"
+        php artisan scan:auto "$directory"
     fi
 
     # if [[ "$event" = "MODIFY" || "$event" = "CREATE" || "$event" = "DELETE" ]]; then

@@ -19,31 +19,50 @@ class ScanManga implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    // path属性
     private $include;
     private $exclude;
     private $pathId;
+    private $mediaType;
     private $scanCount;
     private $scanIndex;
     private $mangaPath;
+    // manga属性
     private $mangaName;
     private $mangaCover;
     private $mangaType;
     private $defaultBrowse;
     private $direction;
+    private $removeFirst;
     private $mediaId;
-    private $mediaType;
-    private $removeFirst;
-    private $removeFirst;
-    private $removeFirst;
+
+    // private $removeFirst;
+    // private $removeFirst;
+    // private $removeFirst;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($pathInfo, $mangaItem)
+    public function __construct($pathInfo, $mangaItem, $scanCount, $scanIndex)
     {
         //
+        $this->pathId = $pathInfo->pathId;
+        $this->mediaId = $pathInfo->mediaId;
+        $this->defaultBrowse = $pathInfo->defaultBrowse;
+        $this->mediaType = $pathInfo->mediaType;
+        $this->direction = $pathInfo->direction;
+        $this->removeFirst = $pathInfo->removeFirst;
+        $this->include = $pathInfo->include;
+        $this->exclude = $pathInfo->exclude;
+
+        $this->mangaName = $mangaItem->mangaName;
+        $this->mangaPath = $mangaItem->mangaPath;
+        $this->mangaType = $mangaItem->mangaType;
+
+        $this->scanCount = $scanCount;
+        $this->scanIndex = $scanIndex;
     }
 
     /**
@@ -73,6 +92,9 @@ class ScanManga implements ShouldQueue
             'scanIndex' => $this->scanIndex
         ]);
 
+        // 获取封面
+        $this->mangaCover = self::get_poster($this->mangaPath, $this->mangaName);
+
         $mangaData = [
             'mediaId' => $this->mediaId,
             'pathId' => $this->pathId,
@@ -91,7 +113,7 @@ class ScanManga implements ShouldQueue
 
             if ($mangaInfo['request']) {
                 // 漫画已存在 且为单本 跳过此漫画
-                continue;
+                return false;
             }
             // 单本漫画
             $mangaData['chaptercount'] = 1;
@@ -100,7 +122,7 @@ class ScanManga implements ShouldQueue
 
             if ($mangaInfo['code'] == 1) {
                 echo "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}";
-                continue;
+                return false;
             }
 
             $chapterData = [
@@ -130,14 +152,14 @@ class ScanManga implements ShouldQueue
 
             if ($mangaInfo['code'] == 1) {
                 echo "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}";
-                continue;
+                return false;
             }
 
             // 插入章节
             foreach ($chapterList as $key => $value) {
                 // 自定义排除目录
                 if (!$this->include && $this->exclude) {
-                    if (preg_match("/$this->exclude/", $value['path'])) {
+                    if (preg_match("/$this->exclude/", $value->chapterPath)) {
                         continue;
                     }
                 }
@@ -145,22 +167,29 @@ class ScanManga implements ShouldQueue
                 // 更新扫描记录-进行中
                 ScanSql::scan_update($this->pathId, [
                     'scanStatus' => 'scaning',
-                    'targetPath' => $value['path'],
+                    'targetPath' => $value->chapterPath,
                 ]);
 
                 $chapterData = [
                     'mangaId' => $mangaInfo['request']->mangaId,
                     'mediaId' => $this->mediaId,
                     'pathId' => $this->pathId,
-                    'chapterName' => $value['name'],
-                    'chapterCover' => $value['poster'],
-                    'chapterPath' => $value['path'],
-                    'chapterType' => $value['type'],
+                    'chapterName' => $value->chapterName,
+                    'chapterCover' => $value->chapterCover,
+                    'chapterPath' => $value->chapterPath,
+                    'chapterType' => $value->chapterType,
                     'browseType' => $this->defaultBrowse
                 ];
 
                 ChapterSql::add($chapterData);
             }
+        }
+
+        // 更新扫描记录-扫描结束
+        if ($this->scanIndex >= $this->scanCount) {
+            ScanSql::scan_update($this->pathId, [
+                'scanStatus' => 'finish'
+            ]);
         }
     }
     /**
@@ -197,18 +226,11 @@ class ScanManga implements ShouldQueue
                 $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)/i', '', $posterName);
             }
 
-            array_push($list, array(
-                'name' => $file,
-                'poster' => self::get_poster($targetPath, $posterName),
-                'path' => $targetPath,
-                'type' => $type,
-            ));
+            array_push($list, new ChapterItem($file,$targetPath,self::get_poster($targetPath, $posterName),$type));
         }
 
         $dir->close();
-
-        array_multisort(array_column($list, 'name'), SORT_NATURAL | SORT_FLAG_CASE, $list);
-
+        
         return $list;
     }
 
@@ -309,5 +331,21 @@ class ScanManga implements ShouldQueue
         // } else {
         //     return '';
         // }
+    }
+}
+
+class ChapterItem
+{
+    public $chapterName;
+    public $chapterPath;
+    public $chapterType;
+    public $chapterCover;
+
+    public function __construct($chapterName, $chapterPath, $chapterCover, $chapterType)
+    {
+        $this->chapterName = $chapterName;
+        $this->chapterPath = $chapterPath;
+        $this->chapterCover = $chapterCover;
+        $this->chapterType = $chapterType;
     }
 }
