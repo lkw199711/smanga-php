@@ -51,6 +51,7 @@ class Path extends Controller
         $mediaId = $request->post('mediaId');
         $path = $request->post('path');
         $autoScan = $request->post('autoScan');
+        $scheduledScan = $request->post('scheduledScan');
         $include = $request->post('include');
         $exclude = $request->post('exclude');
 
@@ -65,7 +66,7 @@ class Path extends Controller
             return ['code' => 1, 'message' => '路径已存在,请勿重复添加', 'status' => 'path add filed'];
         }
         // 获取pathId
-        $sqlRes = PathSql::add(['mediaId' => $mediaId, 'path' => $path, 'autoScan' => $autoScan, 'include' => $include, 'exclude' => $exclude]);
+        $sqlRes = PathSql::add(['mediaId' => $mediaId, 'path' => $path, 'autoScan' => $autoScan, 'scheduledScan' => $scheduledScan, 'include' => $include, 'exclude' => $exclude]);
 
         if ($sqlRes['code'] == 1) {
             return $sqlRes;

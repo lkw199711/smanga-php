@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 01:43:27
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-18 22:39:59
+ * @LastEditTime: 2023-06-23 03:53:37
  * @FilePath: /php/laravel/app/Console/Commands/Daemon.php
  */
 
@@ -11,6 +11,7 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\Deploy;
 use App\Http\Controllers\Utils;
+use App\Jobs\Scan;
 use App\Models\ScanSql;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
@@ -61,6 +62,8 @@ class Daemon extends Command
             echo date("Y-m-d H:i:s");
             echo "\n\r";
 
+
+
             $configPath = getenv('SMANGA_CONFIG');
             $installLock = "$configPath/install.lock";
             $AppPath = getenv('SMANGA_APP');
@@ -98,11 +101,14 @@ class Daemon extends Command
                 sleep(10);
             }
 
-            // 启动目录自动扫描
-            self::auto_scan();
-
             // 清除扫描记录
             self::clear_scan();
+
+            // 启动目录自动扫描 暂且放弃使用
+            //self::auto_scan();
+
+            // 定时扫描
+            self::scheduled_scan();
 
             // 循环次数增加
             $loopNum++;
@@ -124,7 +130,7 @@ class Daemon extends Command
 
         foreach ($scanList as $val) {
             if ($val->scanStatus === 'finish') {
-                $clearTimeLimit = 1 * 60;
+                $clearTimeLimit = 0;
             } else {
                 $clearTimeLimit = 1 * 60 * 60;
             }
@@ -137,10 +143,42 @@ class Daemon extends Command
 
             // 计算时间差（以分钟为单位）
             $timeDifference = $currentDateTime->diffInSeconds($previousDateTime);
-
+        
+            dump($timeDifference);
             // 检查时间差是否超过十分钟（以秒为单位）
             if ($timeDifference > $clearTimeLimit) { // 十分钟等于 10 * 60 = 600 秒
                 ScanSql::scan_delete($val->scanId);
+            }
+        }
+    }
+
+    /**
+     * @description: 定时扫描任务
+     * @return {*}
+     */
+    private static function scheduled_scan()
+    {
+        $pathArr = DB::table('path')->where('scheduledScan', 1)->get();
+
+        $AppPath = getenv('SMANGA_APP');
+        $configPath = getenv('SMANGA_CONFIG');
+        $supervisorConfigPath = "$configPath/auto-scan";
+        // 定时扫描时间间隔
+        $interval = self::clac_interval();
+
+        foreach ($pathArr as $val) {
+            // 获取当前时间
+            $currentDateTime = Carbon::now();
+
+            // 假设有一个过去的时间点
+            $previousDateTime = Carbon::parse($val->lastScanTime);
+
+            // 计算时间差（以分钟为单位）
+            $timeDifference = $currentDateTime->diffInSeconds($previousDateTime);
+
+            // 检查时间差是否超过间隔（以秒为单位）
+            if ($timeDifference > $interval) { // 十分钟等于 10 * 60 = 600 秒
+                Scan::dispatch($val->pathId)->onQueue('scan');
             }
         }
     }
@@ -154,13 +192,14 @@ class Daemon extends Command
         $pathArr = DB::table('path')->where('autoScan', 1)->get();
 
         $AppPath = getenv('SMANGA_APP');
-        $supervisorConfigPath = getenv('SMANGA_SUPERVISOR');
-// echo $AppPath;exit;
+        $configPath = getenv('SMANGA_CONFIG');
+        $supervisorConfigPath = "$configPath/auto-scan";
+        // echo $AppPath;exit;
         foreach ($pathArr as $val) {
             $path = $val->path;
             $md5 = md5($val->path);
             $configFileName = "{$supervisorConfigPath}/$md5.ini";
-            
+
             $configTitle = "program:path-$md5";
             if (!is_file($configFileName)) {
 
@@ -186,5 +225,25 @@ class Daemon extends Command
                 dump('已找到命令');
             }
         }
+    }
+
+    /**
+     * @description: 当参数带有*时, 计算其结果
+     * @return {*}
+     */
+    private static function clac_interval()
+    {
+        $interval  = Utils::config_read('scan', 'interval');
+        $result = 1;
+        if (strpos($interval, '*')) {
+            $intervalArr = explode('*', $interval);
+            foreach ($intervalArr as $val) {
+                $result = $result * (int)$val;
+            }
+
+            $interval = $result;
+        }
+
+        return $interval;
     }
 }

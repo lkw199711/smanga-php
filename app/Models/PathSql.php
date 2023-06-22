@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-29 21:16:25
+ * @LastEditTime: 2023-06-22 19:10:08
  * @FilePath: /php/laravel/app/Models/PathSql.php
  */
 
@@ -84,6 +84,36 @@ class PathSql extends Model
             MangaSql::manga_delete_by_path($pathId);
             ChapterSql::chapter_delete_by_path($pathId);
             return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($pathId)];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @description: 更新路径信息
+     * @param {*} $pathId
+     * @param {*} $data
+     * @return {*}
+     */
+    public static function path_update($pathId, $data)
+    {
+        try {
+            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('pathId', $pathId)->update($data)];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @description: 更新扫描时间
+     * @param {*} $pathId
+     * @param {*} $lastScanTime
+     * @return {*}
+     */
+    public static function path_update_scan_time($pathId, $lastScanTime)
+    {
+        try {
+            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('pathId', $pathId)->update(['lastScanTime' => $lastScanTime])];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }

@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-17 14:59:04
+ * @LastEditTime: 2023-06-22 19:02:14
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -13,6 +13,7 @@ use App\Http\Controllers\Utils;
 use App\Models\ChapterSql;
 use App\Models\LogSql;
 use App\Models\MangaSql;
+use App\Models\PathSql;
 use App\Models\ScanSql;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -101,6 +102,9 @@ class Scan implements ShouldQueue
         } else {
             self::scan_path($this->path);
         }
+
+        // 更新最新扫描时间
+        PathSql::path_update_scan_time($this->pathId, date('Y-m-d H:i:s'));
     }
 
     /**

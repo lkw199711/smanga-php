@@ -93,6 +93,11 @@ class Deploy extends Controller
             Utils::config_write('sql', 'database', $database);
         }
 
+        // 3.3.3 新增定时扫描间隔
+        if(!Utils::config_read('scan', 'interval ')){
+            Utils::config_write('scan', 'interval', 1*24*60*60);
+        }
+
         // 将原有的config数据库设置写入 env
         Utils::update_env([
             'DB_HOST' => $ip,
@@ -593,6 +598,12 @@ class Deploy extends Controller
                 `updateTime` datetime(0) NULL,
                 PRIMARY KEY (`scanId`, `pathId`)
               ) ENGINE = MEMORY;");
+            
+            // 新增定时扫描字段
+            $link->query("ALTER TABLE `path` 
+                ADD COLUMN `scheduledScan` int(1) ZEROFILL NULL COMMENT '定时扫描' AFTER `autoScan`,
+                ADD COLUMN `lastScanTime` datetime(0) NULL COMMENT '上次扫描时间' AFTER `exclude`;
+            ");
 
             // 新增3.3.3版本记录
             VersionSql::add([
