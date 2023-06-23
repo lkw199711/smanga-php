@@ -141,47 +141,97 @@ class ScanManga implements ShouldQueue
             // 普通结构
 
             $chapterList = self::get_chapter_list($this->mangaPath);
+            $chapterListSql = [];
 
             if (!$mangaInfo['request']) {
                 // 漫画不存在则新增
                 $mangaData['chaptercount'] = count($chapterList);
                 // 插入漫画
                 $mangaInfo = MangaSql::add($mangaData);
+            } else {
+                // 漫画原本存在,获取所有漫画章节进行增减判断
+                $mangaId = $mangaInfo['request']->mangaId;
+                $res = ChapterSql::get_nopage($mangaId, 'id');
+                $chapterListSql = $res['list'];
             }
 
-
+            // 获取漫画是吧(数据库错误)
             if ($mangaInfo['code'] == 1) {
                 echo "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}";
+                // 记录错误日志
+                LogSql::add([
+                    'logType' => 'error',
+                    'logLevel' => 3,
+                    'logContent' => "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}"
+                ]);
                 return false;
             }
 
-            // 插入章节
-            foreach ($chapterList as $key => $value) {
-                // 自定义排除目录
-                if (!$this->include && $this->exclude) {
-                    if (preg_match("/$this->exclude/", $value->chapterPath)) {
-                        continue;
+            // 实际目录扫描多于数据库章节 (说明新增了章节)
+            if (count($chapterList) > count($chapterListSql)) {
+                foreach ($chapterList as $val) {
+
+                    // 自定义排除目录
+                    if (!$this->include && $this->exclude) {
+                        if (preg_match("/$this->exclude/", $val->chapterPath)) {
+                            continue;
+                        }
+                    }
+
+                    // 更新扫描记录-进行中
+                    ScanSql::scan_update($this->pathId, [
+                        'scanStatus' => 'scaning',
+                        'targetPath' => $val->chapterPath,
+                    ]);
+
+                    $hasChapter = false;
+                    foreach ($chapterListSql as $sqlval) {
+                        if ($val->chapterPath === $sqlval->chapterPath) {
+                            $hasChapter = true;
+                            break;
+                        }
+                    }
+
+                    // 没有章节 进行新增
+                    if (!$hasChapter) {
+                        $chapterData = [
+                            'mangaId' => $mangaInfo['request']->mangaId,
+                            'mediaId' => $this->mediaId,
+                            'pathId' => $this->pathId,
+                            'chapterName' => $val->chapterName,
+                            'chapterCover' => $val->chapterCover,
+                            'chapterPath' => $val->chapterPath,
+                            'chapterType' => $val->chapterType,
+                            'browseType' => $this->defaultBrowse
+                        ];
+
+                        ChapterSql::add($chapterData);
                     }
                 }
+            }
 
-                // 更新扫描记录-进行中
-                ScanSql::scan_update($this->pathId, [
-                    'scanStatus' => 'scaning',
-                    'targetPath' => $value->chapterPath,
-                ]);
+            // 实际目录扫描少于数据库章节 (说明删除了章节)
+            if (count($chapterList) < count($chapterListSql)) {
+                foreach ($chapterListSql as $sqlval) {
+                    // 更新扫描记录-进行中
+                    ScanSql::scan_update($this->pathId, [
+                        'scanStatus' => 'scaning',
+                        'targetPath' => $sqlval->chapterPath,
+                    ]);
 
-                $chapterData = [
-                    'mangaId' => $mangaInfo['request']->mangaId,
-                    'mediaId' => $this->mediaId,
-                    'pathId' => $this->pathId,
-                    'chapterName' => $value->chapterName,
-                    'chapterCover' => $value->chapterCover,
-                    'chapterPath' => $value->chapterPath,
-                    'chapterType' => $value->chapterType,
-                    'browseType' => $this->defaultBrowse
-                ];
+                    $hasChapter = false;
+                    foreach ($chapterList as $val) {
+                        if ($val->chapterPath === $sqlval->chapterPath) {
+                            $hasChapter = true;
+                            break;
+                        }
+                    }
 
-                ChapterSql::add($chapterData);
+                    // 目录实际没有此章节 在数据库中删除
+                    if (!$hasChapter) {
+                        ChapterSql::chapter_delete($sqlval->chapterId);
+                    }
+                }
             }
         }
 
@@ -190,6 +240,11 @@ class ScanManga implements ShouldQueue
             ScanSql::scan_update($this->pathId, [
                 'scanStatus' => 'finish'
             ]);
+
+            // 扫描结束,删除扫描记录
+            ScanSql::scan_delete_by_pathid($this->pathId);
+
+            //Utils::socket_send_array($this->userId, 0, '解压完成', $chapterInfo->mangaName . ':\n\r' . $chapterInfo->chapterName);
         }
     }
     /**
@@ -226,11 +281,11 @@ class ScanManga implements ShouldQueue
                 $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)/i', '', $posterName);
             }
 
-            array_push($list, new ChapterItem($file,$targetPath,self::get_poster($targetPath, $posterName),$type));
+            array_push($list, new ChapterItem($file, $targetPath, self::get_poster($targetPath, $posterName), $type));
         }
 
         $dir->close();
-        
+
         return $list;
     }
 

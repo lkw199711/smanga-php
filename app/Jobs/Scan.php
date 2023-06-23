@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-22 19:02:14
+ * @LastEditTime: 2023-06-23 11:43:01
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -96,11 +96,34 @@ class Scan implements ShouldQueue
             'pathId' => $this->pathId,
         ]);
 
+        $mangaList = [];
+        $mangaListSql = [];
         // 是否扫描二级目录
         if ($this->directoryFormat == 1) {
-            self::scan_second_path();
+            $mangaList = self::scan_second_path();
         } else {
-            self::scan_path($this->path);
+            $mangaList = self::scan_path($this->path);
+        }
+
+        // 获取路径下所有漫画
+        $mangaListSql = DB::table('manga')->where('pathId', $this->pathId)->get();
+        
+        // 不进行扫描了 只比对删除记录
+        if (count($mangaList) < count($mangaListSql)) {
+
+            foreach ($mangaListSql as $sqlval) {
+                $hasManga = false;
+                foreach ($mangaList as $val) {
+                    if ($val->mangaPath === $sqlval->mangaPath) {
+                        $hasManga = true;
+                        break;
+                    }
+                }
+
+                if (!$hasManga) {
+                    MangaSql::manga_delete($sqlval->mangaId);
+                }
+            }
         }
 
         // 更新最新扫描时间
@@ -113,10 +136,13 @@ class Scan implements ShouldQueue
      */
     protected function scan_second_path()
     {
-        $mangaList = self::get_manga_list($this->path);
-        foreach ($mangaList as $key => $value) {
-            self::scan_path($value['path'], $this->pathId, $this->mediaId);
+        $floderList = self::get_manga_list($this->path);
+        $mangaList = [];
+        foreach ($floderList as $key => $value) {
+            array_merge($mangaList, self::scan_path($value['path'], $this->pathId, $this->mediaId));
         }
+
+        return $mangaList;
     }
     /**
      * @description: 扫描目录
@@ -139,9 +165,11 @@ class Scan implements ShouldQueue
         $mangaList = self::get_manga_list($path);
 
         for ($i = 0, $length = count($mangaList); $i < $length; $i++) {
-            ScanManga::dispatch($this->pathInfo, $mangaList[$i], $length, $i + 1)->onQueue('scan');
-            // ScanManga::dispatchSync($this->pathInfo, $mangaList[$i], $length, $i + 1);
+            // ScanManga::dispatch($this->pathInfo, $mangaList[$i], $length, $i + 1)->onQueue('scan');
+            ScanManga::dispatchSync($this->pathInfo, $mangaList[$i], $length, $i + 1);
         }
+
+        return $mangaList;
     }
     /**
      * @description: 扫描目录获取漫画列表
@@ -158,8 +186,19 @@ class Scan implements ShouldQueue
             if ($file == '.' || $file == '..') continue;
 
             $targetPath = $path . "/" . $file;
-
             $posterName = $targetPath;
+
+            // 自定义排除目录
+            if ($this->include) {
+                if (!preg_match("/$this->include/", $targetPath)) {
+                    continue;
+                }
+            } elseif ($this->exclude) {
+                if (preg_match("/$this->exclude/", $targetPath)) {
+                    continue;
+                }
+            }
+
             // 是文件
             if (!is_dir($targetPath)) {
                 if (preg_match('/(.cbr|.cbz|.zip|.epub)/i', $file)) {

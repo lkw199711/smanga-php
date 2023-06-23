@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-17 14:41:43
+ * @LastEditTime: 2023-06-23 03:58:18
  * @FilePath: \lar-demo\app\Models\ScanSql.php
  */
 
@@ -102,6 +102,19 @@ class ScanSql extends Model
     {
         try {
             return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($scanId)];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+    /**
+     * @description: 根据pathid删除扫描记录
+     * @param {*} $pathId
+     * @return {*}
+     */
+    public static function scan_delete_by_pathid($pathId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('pathId', $pathId)->delete()];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }

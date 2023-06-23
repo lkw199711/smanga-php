@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 01:43:27
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-23 03:53:37
+ * @LastEditTime: 2023-06-23 04:47:00
  * @FilePath: /php/laravel/app/Console/Commands/Daemon.php
  */
 
@@ -53,7 +53,8 @@ class Daemon extends Command
     {
         // 设置脚本无限时间执行
         set_time_limit(0);
-
+        $sleepTime = 10;
+        $shortSleepTime = 10;
         $loopNum = 0;
 
         // 死循环进程
@@ -71,7 +72,7 @@ class Daemon extends Command
 
             // 未完成初次部署 等待
             if (!is_file($installLock)) {
-                sleep(10);
+                sleep($shortSleepTime);
                 continue;
             }
 
@@ -114,7 +115,7 @@ class Daemon extends Command
             $loopNum++;
 
             // 睡眠一段时间
-            sleep(60);
+            sleep($sleepTime);
         }
 
         return 0;
@@ -178,7 +179,8 @@ class Daemon extends Command
 
             // 检查时间差是否超过间隔（以秒为单位）
             if ($timeDifference > $interval) { // 十分钟等于 10 * 60 = 600 秒
-                Scan::dispatch($val->pathId)->onQueue('scan');
+                // Scan::dispatch($val->pathId)->onQueue('scan');
+                Scan::dispatchSync($val->pathId);
             }
         }
     }
