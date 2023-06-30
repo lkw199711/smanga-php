@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-17 14:28:14
+ * @LastEditTime: 2023-06-23 21:04:12
  * @FilePath: /php/laravel/app/Http/Controllers/Path.php
  */
 
@@ -75,7 +75,12 @@ class Path extends Controller
         $pathInfo = $sqlRes['info'];
 
         // 添加扫描任务
-        Scan::dispatch($pathInfo->pathId)->onQueue('scan');
+        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+        if ($dispatchSync) {
+            Scan::dispatchSync($pathInfo->pathId);
+        } else {
+            Scan::dispatch($pathInfo->pathId)->onQueue('scan');
+        }
 
         return ['code' => 0, 'message' => '新增成功', 'status' => 'path add success'];
     }
@@ -98,10 +103,15 @@ class Path extends Controller
     public function scan(Request $request)
     {
         $pathId = $request->post('pathId');
-        // 队列运行
-        Scan::dispatch($pathId)->onQueue('scan');
-        // 同步执行 可调试
-        // Scan::dispatchSync($pathId);
+        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+        if ($dispatchSync) {
+            // 同步执行 可调试
+            Scan::dispatchSync($pathId);
+        } else {
+            // 队列运行
+            Scan::dispatch($pathId)->onQueue('scan');
+        }
+
         return ['code' => 0, 'message' => '任务添加成功', 'status' => 'scan success'];
     }
     /**
@@ -115,11 +125,16 @@ class Path extends Controller
 
         MangaSql::manga_delete_by_path($pathId);
         ChapterSql::chapter_delete_by_path($pathId);
-
-        // 队列运行
-        Scan::dispatch($pathId)->onQueue('scan');
-        // 同步执行 可调试
-        // Scan::dispatchSync($pathId);
+        
+        // 调试模式下同步运行
+        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+        if ($dispatchSync) {
+            // 同步执行 可调试
+            Scan::dispatchSync($pathId);
+        } else {
+            // 队列运行
+            Scan::dispatch($pathId)->onQueue('scan');
+        }
 
         return ['code' => 0, 'message' => '任务添加成功', 'status' => 'scan success'];
     }

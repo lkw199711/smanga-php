@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-13 21:19:06
+ * @LastEditTime: 2023-06-23 20:05:42
  * @FilePath: \lar-demo\routes\web.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -81,6 +81,16 @@ Route::post('search/get', [App\Http\Controllers\Search::class, 'get']);
 Route::post('image/get', [App\Http\Controllers\Image::class, 'get']);
 
 Route::post('log/get', [App\Http\Controllers\Log::class, 'get']);
+
+// 服务器设置
+Route::post('serve/scan/set', [App\Http\Controllers\ServeSetting::class, 'scan_set']);
+Route::post('serve/scan/get', [App\Http\Controllers\ServeSetting::class, 'scan_get']);
+
+Route::post('serve/imagick/get', [App\Http\Controllers\ServeSetting::class, 'imagick_get']);
+Route::post('serve/imagick/set', [App\Http\Controllers\ServeSetting::class, 'imagick_set']);
+
+Route::post('serve/daemon/get', [App\Http\Controllers\ServeSetting::class, 'daemon_get']);
+Route::post('serve/daemon/set', [App\Http\Controllers\ServeSetting::class, 'daemon_set']);
 
 
 Route::any('test', function (Request $request) {

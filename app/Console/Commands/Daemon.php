@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 01:43:27
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-23 04:47:00
+ * @LastEditTime: 2023-06-23 20:25:55
  * @FilePath: /php/laravel/app/Console/Commands/Daemon.php
  */
 
@@ -144,7 +144,7 @@ class Daemon extends Command
 
             // 计算时间差（以分钟为单位）
             $timeDifference = $currentDateTime->diffInSeconds($previousDateTime);
-        
+
             dump($timeDifference);
             // 检查时间差是否超过十分钟（以秒为单位）
             if ($timeDifference > $clearTimeLimit) { // 十分钟等于 10 * 60 = 600 秒
@@ -179,8 +179,14 @@ class Daemon extends Command
 
             // 检查时间差是否超过间隔（以秒为单位）
             if ($timeDifference > $interval) { // 十分钟等于 10 * 60 = 600 秒
-                // Scan::dispatch($val->pathId)->onQueue('scan');
-                Scan::dispatchSync($val->pathId);
+                // 调试模式下同步运行
+                $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+
+                if ($dispatchSync) {
+                    Scan::dispatchSync($val->pathId);
+                } else {
+                    Scan::dispatch($val->pathId)->onQueue('scan');
+                }
             }
         }
     }

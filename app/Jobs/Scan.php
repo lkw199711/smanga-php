@@ -107,7 +107,7 @@ class Scan implements ShouldQueue
 
         // 获取路径下所有漫画
         $mangaListSql = DB::table('manga')->where('pathId', $this->pathId)->get();
-        
+
         // 不进行扫描了 只比对删除记录
         if (count($mangaList) < count($mangaListSql)) {
 
@@ -163,10 +163,14 @@ class Scan implements ShouldQueue
         $this->removeFirst = $this->removeFirst ? $this->removeFirst : 0;
 
         $mangaList = self::get_manga_list($path);
+        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
 
         for ($i = 0, $length = count($mangaList); $i < $length; $i++) {
-            // ScanManga::dispatch($this->pathInfo, $mangaList[$i], $length, $i + 1)->onQueue('scan');
-            ScanManga::dispatchSync($this->pathInfo, $mangaList[$i], $length, $i + 1);
+            if ($dispatchSync) {
+                ScanManga::dispatchSync($this->pathInfo, $mangaList[$i], $length, $i + 1);
+            } else {
+                ScanManga::dispatch($this->pathInfo, $mangaList[$i], $length, $i + 1)->onQueue('scan');
+            }
         }
 
         return $mangaList;

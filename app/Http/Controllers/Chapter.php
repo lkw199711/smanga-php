@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-31 19:50:02
+ * @LastEditTime: 2023-06-23 21:03:37
  * @FilePath: /php/laravel/app/Http/Controllers/Chapter.php
  */
 
@@ -40,10 +40,10 @@ class Chapter extends Controller
         if ($page) {
             // 通过媒体库获取漫画章节
             return ChapterSql::get($mangaId, $page, $pageSize, $order);
-        }elseif($mangaId){
+        } elseif ($mangaId) {
             // 无分页获取章节
             return ChapterSql::get_nopage($mangaId, $order);
-        }else {
+        } else {
             // 获取全部漫画
             return ChapterSql::get_nomanga($mediaLimit, $page, $pageSize, $order);
         }
@@ -94,7 +94,14 @@ class Chapter extends Controller
                     return ['code' => 0, 'list' => [], 'status' => $compressInfo->compressStatus];
                 }
             } else {
-                Compress::dispatch($userId, $chapterId)->onQueue('compress');
+                // 调试模式下同步运行
+                $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+                if ($dispatchSync) {
+                    Compress::dispatchSync($userId, $chapterId);
+                } else {
+                    Compress::dispatch($userId, $chapterId)->onQueue('compress');
+                }
+
                 return ['code' => 0, 'message' => '正在进行压缩转换', 'status' => 'uncompressed'];
             }
         } else {
