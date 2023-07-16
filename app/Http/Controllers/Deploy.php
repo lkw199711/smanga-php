@@ -569,7 +569,7 @@ class Deploy extends Controller
             $link->query("CREATE TABLE IF NOT EXISTS `log`  (
                 `logId` int(0) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `logType` varchar(255) NOT NULL DEFAULT 'process' COMMENT '日志类型 error/process/operate',
-                `logLevel` int(0) NULL COMMENT DEFAULT 0 '日志等级',
+                `logLevel` int(0) NULL DEFAULT 0 COMMENT '日志等级',
                 `logContent` varchar(255) NULL COMMENT '日志内容',
                 `createTime` datetime(0) NULL,
                 `updateTime` datetime(0) NULL,
@@ -587,15 +587,15 @@ class Deploy extends Controller
         // 333
         if (array_search('3.3.3', $vers) === false) {
             $link->query("CREATE TABLE IF NOT EXISTS `scan`  (
-                `scanId` int(0) UNSIGNED NOT NULL AUTO_INCREMENT,
-                `scanStatus` varchar(255) NULL,
-                `path` varchar(255) NULL,
-                `targetPath` varchar(255) NULL,
-                `pathId` int(0) NULL,
-                `scanCount` int(0) NULL,
-                `scanIndex` int(0) NULL,
-                `createTime` datetime(0) NULL,
-                `updateTime` datetime(0) NULL,
+                `scanId` int(0) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
+                `scanStatus` varchar(255) NULL COMMENT 'start|scaning|finish',
+                `path` varchar(255) NULL COMMENT '路径',
+                `targetPath` varchar(255) NULL COMMENT '正在扫描的二级路径',
+                `pathId` int(0) NOT NULL COMMENT '第二主键',
+                `scanCount` int(0) NULL COMMENT '扫描目标总数',
+                `scanIndex` int(0) NULL COMMENT '正在扫描的进度',
+                `createTime` datetime(0) NULL COMMENT '扫描任务开始时间',
+                `updateTime` datetime(0) NULL COMMENT '扫描任务更新时间',
                 PRIMARY KEY (`scanId`, `pathId`)
               ) ENGINE = MEMORY;");
             
@@ -613,6 +613,15 @@ class Deploy extends Controller
             ]);
         }
 
+        // 334
+        if (array_search('3.3.4', $vers) === false) {
+            // 新增3.3.4版本记录
+            VersionSql::add([
+                'version' => '3.3.4',
+                'versionDescribe' => '新增自动扫描设置',
+                'createTime' => '2023-07-16 17:34:00'
+            ]);
+        }
 
 
         // 有此文件说明并非初次部署
@@ -620,7 +629,7 @@ class Deploy extends Controller
 
         if (is_file($installLock)) {
             // 记录版本 代表初始化结束
-            Utils::write_txt($versionFile, '3.3.1');
+            Utils::write_txt($versionFile, '3.3.4');
         }
 
         return [

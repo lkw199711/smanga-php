@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 01:43:27
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-23 20:25:55
+ * @LastEditTime: 2023-07-16 09:39:58
  * @FilePath: /php/laravel/app/Console/Commands/Daemon.php
  */
 
@@ -106,10 +106,10 @@ class Daemon extends Command
             self::clear_scan();
 
             // 启动目录自动扫描 暂且放弃使用
-            //self::auto_scan();
+            // self::auto_scan();
 
             // 定时扫描
-            self::scheduled_scan();
+            self::auto_scan();
 
             // 循环次数增加
             $loopNum++;
@@ -145,7 +145,6 @@ class Daemon extends Command
             // 计算时间差（以分钟为单位）
             $timeDifference = $currentDateTime->diffInSeconds($previousDateTime);
 
-            dump($timeDifference);
             // 检查时间差是否超过十分钟（以秒为单位）
             if ($timeDifference > $clearTimeLimit) { // 十分钟等于 10 * 60 = 600 秒
                 ScanSql::scan_delete($val->scanId);
@@ -157,15 +156,15 @@ class Daemon extends Command
      * @description: 定时扫描任务
      * @return {*}
      */
-    private static function scheduled_scan()
+    private static function auto_scan()
     {
-        $pathArr = DB::table('path')->where('scheduledScan', 1)->get();
+        $pathArr = DB::table('path')->where('autoScan', 1)->get();
 
         $AppPath = getenv('SMANGA_APP');
         $configPath = getenv('SMANGA_CONFIG');
         $supervisorConfigPath = "$configPath/auto-scan";
         // 定时扫描时间间隔
-        $interval = self::clac_interval();
+        $interval = (int)self::clac_interval();
 
         foreach ($pathArr as $val) {
             // 获取当前时间
@@ -176,7 +175,7 @@ class Daemon extends Command
 
             // 计算时间差（以分钟为单位）
             $timeDifference = $currentDateTime->diffInSeconds($previousDateTime);
-
+            
             // 检查时间差是否超过间隔（以秒为单位）
             if ($timeDifference > $interval) { // 十分钟等于 10 * 60 = 600 秒
                 // 调试模式下同步运行
@@ -195,7 +194,7 @@ class Daemon extends Command
      * @description: 自动扫描
      * @return {*}
      */
-    public function auto_scan()
+    public function auto_scan1()
     {
         $pathArr = DB::table('path')->where('autoScan', 1)->get();
 

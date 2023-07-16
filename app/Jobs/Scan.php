@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-23 11:43:01
+ * @LastEditTime: 2023-07-16 08:53:10
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -89,12 +89,8 @@ class Scan implements ShouldQueue
             return false;
         }
 
-        // 插入扫描记录
-        ScanSql::add([
-            'scanStatus' => 'start',
-            'path' => $this->path,
-            'pathId' => $this->pathId,
-        ]);
+        // 开始扫描
+        self::scan_start();
 
         $mangaList = [];
         $mangaListSql = [];
@@ -124,10 +120,24 @@ class Scan implements ShouldQueue
                     MangaSql::manga_delete($sqlval->mangaId);
                 }
             }
-        }
 
-        // 更新最新扫描时间
-        PathSql::path_update_scan_time($this->pathId, date('Y-m-d H:i:s'));
+            self::scan_end();
+            
+        } elseif (count($mangaList) == 0) {
+            // 如果为空目录 则直接结束扫描
+            self::scan_end();
+        } else {
+            // 正常扫描
+            $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+
+            for ($i = 0, $length = count($mangaList); $i < $length; $i++) {
+                if ($dispatchSync) {
+                    ScanManga::dispatchSync($this->pathInfo, $mangaList[$i], $length, $i + 1);
+                } else {
+                    ScanManga::dispatch($this->pathInfo, $mangaList[$i], $length, $i + 1)->onQueue('scan');
+                }
+            }
+        }
     }
 
     /**
@@ -163,15 +173,6 @@ class Scan implements ShouldQueue
         $this->removeFirst = $this->removeFirst ? $this->removeFirst : 0;
 
         $mangaList = self::get_manga_list($path);
-        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
-
-        for ($i = 0, $length = count($mangaList); $i < $length; $i++) {
-            if ($dispatchSync) {
-                ScanManga::dispatchSync($this->pathInfo, $mangaList[$i], $length, $i + 1);
-            } else {
-                ScanManga::dispatch($this->pathInfo, $mangaList[$i], $length, $i + 1)->onQueue('scan');
-            }
-        }
 
         return $mangaList;
     }
@@ -226,6 +227,35 @@ class Scan implements ShouldQueue
         $dir->close();
 
         return $list;
+    }
+
+    /**
+     * @description: 结束扫描
+     * @return {*}
+     */
+    private function scan_end()
+    {
+        // 更新扫描记录-结束
+        ScanSql::scan_update($this->pathId, [
+            'scanStatus' => 'finish',
+        ]);
+
+        // 更新最新扫描时间
+        PathSql::path_update_scan_time($this->pathId, date('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @description: 扫描开始
+     * @return {*}
+     */
+    private function scan_start()
+    {
+        // 插入扫描记录
+        ScanSql::add([
+            'scanStatus' => 'start',
+            'path' => $this->path,
+            'pathId' => $this->pathId,
+        ]);
     }
 }
 
