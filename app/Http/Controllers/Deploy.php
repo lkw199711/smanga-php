@@ -618,7 +618,7 @@ class Deploy extends Controller
             // 新增3.3.4版本记录
             VersionSql::add([
                 'version' => '3.3.4',
-                'versionDescribe' => '新增自动扫描设置',
+                'versionDescribe' => '新增自动扫描时间设置',
                 'createTime' => '2023-07-16 17:34:00'
             ]);
         }
