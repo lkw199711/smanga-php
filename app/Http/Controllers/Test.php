@@ -21,8 +21,7 @@ class Test extends Controller
     }
     public function test()
     {
-        $tt = 123;
-        $aa = 456;
-        dump($tt);
+
+        dump(is_file("/mnt/single0/single0/18manga/02韩漫/衝突/第59話 嘴上說不要，身體卻很老實.jpg"));
     }
 }

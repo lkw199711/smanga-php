@@ -51,7 +51,7 @@ class ChapterSql extends Model
         $res = self::where('mangaId', $mangaId)
             ->orderByRaw($orderText)
             ->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+        return ['code' => 0, 'request' => '获取成功', 'list' => $res];
     }
     /**
      * @description: 不分页获取
@@ -59,13 +59,18 @@ class ChapterSql extends Model
      * @param {*} $order
      * @return {*}
      */
-    public static function get_nopage($mangaId, $order){
+    public static function get_nopage($mangaId, $order)
+    {
         $orderText = self::get_order_text($order);
 
         $res = self::where('mangaId', $mangaId)
             ->orderByRaw($orderText)
             ->get();
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+
+        $toSql = self::where('mangaId', $mangaId)
+            ->orderByRaw($orderText)
+            ->toSql();
+        return ['code' => 0, 'request' => '获取成功', 'list' => new RequestList($res, count($res)), 'toSql' => $toSql];
     }
     /**
      * @description: 获取全部章节-管理用
@@ -77,14 +82,15 @@ class ChapterSql extends Model
     public static function get_nomanga($mediaLimit, $page = 1, $pageSize = 10)
     {
         $res = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+        return ['code' => 0, 'request' => '获取成功', 'list' => $res];
     }
     /**
      * @description: 新增章节
      * @param {*} $data
      * @return {*}
      */
-    public static function add($data){
+    public static function add($data)
+    {
         try {
             return self::create($data);
         } catch (\Exception $e) {
@@ -109,7 +115,7 @@ class ChapterSql extends Model
             ->orderByRaw($orderText)
             ->paginate($pageSize, ['*'], 'page', $page);
 
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+        return ['code' => 0, 'request' => '获取成功', 'list' => $res];
     }
     /**
      * @description: 修改章节信息
@@ -193,7 +199,7 @@ class ChapterSql extends Model
             $orderText = 'chapterId';
         }
         if (array_search($order, ['name', 'nameDesc']) !== false) {
-            $orderText = 'CAST(chapterName AS DECIMAL)';
+            $orderText = 'CAST(REGEXP_SUBSTR(chapterName, \'[0-9]+\') AS DECIMAL)';
         }
         if (array_search($order, ['time', 'timeDesc']) !== false) {
             $orderText = 'createTime';
@@ -202,5 +208,17 @@ class ChapterSql extends Model
         $desc = preg_match('/Desc$/', $order) ? 'DESC' : 'ASC';
 
         return $orderText . ' ' . $desc;
+    }
+}
+
+class RequestList
+{
+    public $data;
+    public $count;
+
+    public function __construct($data, $count)
+    {
+        $this->data = $data;
+        $this->count = $count;
     }
 }

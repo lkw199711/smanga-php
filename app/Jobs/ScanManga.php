@@ -93,7 +93,7 @@ class ScanManga implements ShouldQueue
         ]);
 
         // 获取封面
-        $this->mangaCover = self::get_poster($this->mangaPath, $this->mangaName);
+        $this->mangaCover = self::get_poster($this->mangaPath, $this->mangaPath);
 
         $mangaData = [
             'mediaId' => $this->mediaId,
@@ -152,7 +152,7 @@ class ScanManga implements ShouldQueue
                 // 漫画原本存在,获取所有漫画章节进行增减判断
                 $mangaId = $mangaInfo['request']->mangaId;
                 $res = ChapterSql::get_nopage($mangaId, 'id');
-                $chapterListSql = $res['list'];
+                $chapterListSql = $res['list']->data;
             }
 
             // 获取漫画是吧(数据库错误)
@@ -278,7 +278,7 @@ class ScanManga implements ShouldQueue
                     continue;
                 }
 
-                $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)/i', '', $posterName);
+                $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $posterName);
             }
 
             array_push($list, new ChapterItem($file, $targetPath, self::get_poster($targetPath, $posterName), $type));
@@ -333,10 +333,8 @@ class ScanManga implements ShouldQueue
      */
     private function get_first_image($path)
     {
-        $list = array();
-
         if (!is_dir($path)) {
-            return $list;
+            return '';
         }
 
         $dir = dir($path);
@@ -372,11 +370,11 @@ class ScanManga implements ShouldQueue
         $png = $name . '.png';
         $PNG = $name . '.PNG';
         $jpg = $name . '.jpg';
-        $JPG = $name . '.jpg';
+        $JPG = $name . '.JPG';
 
         if (is_file($png)) return $png;
         if (is_file($PNG)) return $PNG;
-        if (is_file($jpg)) return $png;
+        if (is_file($jpg)) return $jpg;
         if (is_file($JPG)) return $JPG;
 
         return self::get_first_image($path);
