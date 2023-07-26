@@ -92,8 +92,9 @@ class ScanManga implements ShouldQueue
             'scanIndex' => $this->scanIndex
         ]);
 
+        $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $this->mangaPath);
         // 获取封面
-        $this->mangaCover = self::get_poster($this->mangaPath, $this->mangaPath);
+        $this->mangaCover = self::get_poster($this->mangaPath, $posterName);
 
         $mangaData = [
             'mediaId' => $this->mediaId,
