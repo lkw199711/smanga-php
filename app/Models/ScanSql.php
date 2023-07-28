@@ -47,7 +47,7 @@ class ScanSql extends Model
     public static function get($page, $pageSize)
     {
         $res = self::paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'text' => '获取日志成功', 'list' => $res];
+        return ['code' => 0, 'request' => '获取日志成功', 'list' => $res];
     }
     /**
      * @description: 获取全部扫描记录

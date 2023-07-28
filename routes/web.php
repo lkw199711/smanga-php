@@ -3,9 +3,8 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-23 20:05:42
+ * @LastEditTime: 2023-07-28 12:03:38
  * @FilePath: \lar-demo\routes\web.php
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 use Illuminate\Support\Facades\Route;
@@ -31,6 +30,14 @@ Route::post('d3', [Ding::class, 'get_bookmark']);
 Route::post('bookmark/get', [App\Http\Controllers\BookMark::class, 'get']);
 Route::post('bookmark/add', [App\Http\Controllers\BookMark::class, 'add']);
 Route::post('bookmark/remove', [App\Http\Controllers\BookMark::class, 'remove']);
+// 标签
+Route::post('tag/get', [App\Http\Controllers\Tag::class, 'get']);
+Route::post('tag/add', [App\Http\Controllers\Tag::class, 'add']);
+Route::post('tag/update', [App\Http\Controllers\Tag::class, 'update']);
+Route::post('tag/delete', [App\Http\Controllers\Tag::class, 'delete']);
+Route::post('tag/manga-tag/add', [App\Http\Controllers\Tag::class, 'add_manga_tag']);
+Route::post('tag/manga-tag/get', [App\Http\Controllers\Tag::class, 'get_manga_tag']);
+Route::post('tag/manga-tag/remove', [App\Http\Controllers\Tag::class, 'remove_manga_tag']);
 // 收藏
 Route::post('collect/get', [App\Http\Controllers\Collect::class, 'get']);
 Route::post('collect/add', [App\Http\Controllers\Collect::class, 'add']);
