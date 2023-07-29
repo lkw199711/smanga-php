@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-07-29 06:11:29
+ * @LastEditTime: 2023-07-29 08:59:21
  * @FilePath: /php/laravel/app/Http/Controllers/Manga.php
  */
 
@@ -32,7 +32,7 @@ class Manga extends Controller
 
         if ($mediaId) {
             // 通过媒体库获取漫画
-            return MangaSql::get($page, $pageSize, $mediaId, $mediaLimit);
+            return MangaSql::get($page, $pageSize, $mediaId, $mediaLimit, $userId);
         } else {
             // 获取全部漫画
             return MangaSql::get_nomedia($page, $pageSize, $mediaLimit);
