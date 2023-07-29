@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-07-28 12:03:38
+ * @LastEditTime: 2023-07-29 06:13:12
  * @FilePath: \lar-demo\routes\web.php
  */
 
@@ -65,6 +65,7 @@ Route::post('manga/get', [App\Http\Controllers\Manga::class, 'get']);
 Route::post('manga/add', [App\Http\Controllers\Manga::class, 'add']);
 Route::post('manga/update', [App\Http\Controllers\Manga::class, 'update']);
 Route::post('manga/delete', [App\Http\Controllers\Manga::class, 'delete']);
+Route::post('manga/get_by_tags', [App\Http\Controllers\Manga::class, 'get_by_tags']);
 // 章节
 Route::post('chapter/get', [App\Http\Controllers\Chapter::class, 'get']);
 Route::post('chapter/add', [App\Http\Controllers\Chapter::class, 'add']);

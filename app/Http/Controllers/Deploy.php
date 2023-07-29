@@ -94,8 +94,8 @@ class Deploy extends Controller
         }
 
         // 3.3.3 新增定时扫描间隔
-        if(!Utils::config_read('scan', 'interval ')){
-            Utils::config_write('scan', 'interval', 1*24*60*60);
+        if (!Utils::config_read('scan', 'interval ')) {
+            Utils::config_write('scan', 'interval', 1 * 24 * 60 * 60);
         }
 
         // 将原有的config数据库设置写入 env
@@ -598,7 +598,7 @@ class Deploy extends Controller
                 `updateTime` datetime(0) NULL COMMENT '扫描任务更新时间',
                 PRIMARY KEY (`scanId`, `pathId`)
               ) ENGINE = MEMORY;");
-            
+
             // 新增定时扫描字段
             $link->query("ALTER TABLE `path` 
                 ADD COLUMN `scheduledScan` int(1) ZEROFILL NULL COMMENT '定时扫描' AFTER `autoScan`,
@@ -623,13 +623,48 @@ class Deploy extends Controller
             ]);
         }
 
+        // 337
+        if (array_search('3.3.7', $vers) === false) {
+            // 创建标签表
+            $link->query("CREATE TABLE IF NOT EXISTS `tag`  (
+                `tagId` int(0) NOT NULL AUTO_INCREMENT COMMENT '标签主键',
+                `tagName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标签名称',
+                `tagColor` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标签颜色',
+                `userId` int(0) NULL DEFAULT NULL COMMENT '用户id',
+                `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标签说明',
+                `createTime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
+                `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '升级时间',
+                PRIMARY KEY (`tagId`) USING BTREE
+                ) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+            ");
+            
+            // 创建漫画标签表
+            $link->query("CREATE TABLE IF NOT EXISTS `mangaTag`  (
+                `mangaTagId` int(0) NOT NULL AUTO_INCREMENT COMMENT '漫画关联标签主键',
+                `mangaId` int(0) NULL DEFAULT NULL COMMENT '漫画id',
+                `tagId` int(0) NULL DEFAULT NULL COMMENT '标签id',
+                `createTime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
+                `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
+                PRIMARY KEY (`mangaTagId`) USING BTREE,
+                UNIQUE INDEX `manga-tag`(`mangaId`, `tagId`) USING BTREE COMMENT '相同的标签不能多次添加'
+                ) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+            ");
+            
+            // 新增3.3.7版本记录
+            VersionSql::add([
+                'version' => '3.3.7',
+                'versionDescribe' => '新增自定义标签功能',
+                'createTime' => '2023-07-29 16:03:00'
+            ]);
+        }
+
 
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
         if (is_file($installLock)) {
             // 记录版本 代表初始化结束
-            Utils::write_txt($versionFile, '3.3.4');
+            Utils::write_txt($versionFile, '3.3.7');
         }
 
         return [

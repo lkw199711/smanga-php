@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-18 01:30:34
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-07-29 06:05:05
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -84,9 +84,10 @@ class MangaSql extends Model
      * @param {*} $data
      * @return {*}
      */
-    public static function add($data){
+    public static function add($data)
+    {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request'=> self::create($data)];
+            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
@@ -131,7 +132,7 @@ class MangaSql extends Model
     {
         try {
             self::where('mangaId', $mangaId)->delete();
-            
+
             // 删除相关章节
             ChapterSql::chapter_delete_by_manga($mangaId);
 
@@ -145,7 +146,8 @@ class MangaSql extends Model
      * @param {*} $pathId
      * @return {*}
      */
-    public static function manga_delete_by_path($pathId){
+    public static function manga_delete_by_path($pathId)
+    {
         try {
             self::where('pathId', $pathId)->delete();
             ChapterSql::chapter_delete_by_path($pathId);
@@ -158,12 +160,25 @@ class MangaSql extends Model
      * @param {*} $mediaId
      * @return {*}
      */
-    public static function manga_delete_by_media($mediaId){
+    public static function manga_delete_by_media($mediaId)
+    {
         try {
             self::where('mediaId', $mediaId)->delete();
             ChapterSql::chapter_delete_by_media($mediaId);
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
+    }
+    /**
+     * @description: 通过标签获取漫画
+     * @return {*}
+     */
+    public static function get_by_tags($tagIdArr, $page, $pageSize)
+    {
+        $res = self::join('mangaTag', 'mangaTag.mangaId', 'manga.mangaId')
+            ->whereIn('tagId', $tagIdArr)
+            ->paginate($pageSize, ['*'], 'page', $page);
+
+        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
     }
 }
