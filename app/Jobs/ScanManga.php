@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Utils;
 use App\Models\ChapterSql;
+use App\Models\characterSql;
 use App\Models\LogSql;
 use App\Models\ScanSql;
 use App\Models\MangaSql;
@@ -96,7 +97,7 @@ class ScanManga implements ShouldQueue
         // 获取封面
         $this->mangaCover = self::get_poster($this->mangaPath, $posterName);
 
-        $mangaData = [
+        $mangaInsert = [
             'mediaId' => $this->mediaId,
             'pathId' => $this->pathId,
             'mangaName' => $this->mangaName,
@@ -106,6 +107,12 @@ class ScanManga implements ShouldQueue
             'direction' => $this->direction,
             'removeFirst' => $this->removeFirst
         ];
+
+        // 扫描元数据
+        $mangaMetaPath = self::get_meta_path($this->mangaPath);
+        if (is_dir($mangaMetaPath)) {
+            $mangaInsert = array_merge($mangaInsert, self::get_manga_meta($mangaMetaPath));
+        }
 
         // 检查库中是否存在此漫画
         $mangaInfo = ['code' => 0, 'request' => DB::table('manga')->where('mangaPath', $this->mangaPath)->where('mediaId', $this->mediaId)->first()];
@@ -117,9 +124,9 @@ class ScanManga implements ShouldQueue
                 return false;
             }
             // 单本漫画
-            $mangaData['chaptercount'] = 1;
+            $mangaInsert['chaptercount'] = 1;
             // 插入漫画
-            $mangaInfo = MangaSql::add($mangaData);
+            $mangaInfo = MangaSql::add($mangaInsert);
 
             if ($mangaInfo['code'] == 1) {
                 echo "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}";
@@ -146,9 +153,9 @@ class ScanManga implements ShouldQueue
 
             if (!$mangaInfo['request']) {
                 // 漫画不存在则新增
-                $mangaData['chaptercount'] = count($chapterList);
+                $mangaInsert['chaptercount'] = count($chapterList);
                 // 插入漫画
-                $mangaInfo = MangaSql::add($mangaData);
+                $mangaInfo = MangaSql::add($mangaInsert);
             } else {
                 // 漫画原本存在,获取所有漫画章节进行增减判断
                 $mangaId = $mangaInfo['request']->mangaId;
@@ -233,6 +240,25 @@ class ScanManga implements ShouldQueue
                         ChapterSql::chapter_delete($sqlval->chapterId);
                     }
                 }
+            }
+        }
+
+        // 元数据其他操作
+        if (is_dir($mangaMetaPath)) {
+            $tags = self::get_manga_tags($mangaMetaPath);
+            $character = self::get_manga_character($mangaMetaPath);
+
+            foreach($character as $val){
+                
+                $characterPicture = $mangaMetaPath . '/' . $val->name . '.jpg';
+                if (!is_file($characterPicture)) $characterPicture='';
+
+                characterSql::add([
+                    'characterName'=> $val->name,
+                    'description'=> $val->description,
+                    'characterPicture'=> $characterPicture,
+                    'mangaId'=>$mangaInfo['request']->mangaId,
+                ]);
             }
         }
 
@@ -385,6 +411,113 @@ class ScanManga implements ShouldQueue
         // } else {
         //     return '';
         // }
+    }
+
+    /**
+     * @description: 获取smanga-info的路径
+     * @param {*} $path
+     * @return {*}
+     */
+    private function get_meta_path($path){
+        if (!is_dir($path)) {
+            $path = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $path);
+        }
+
+        $infoPath = $path . '-smanga-info';
+
+        if (!is_dir($infoPath)) {
+            return false;
+        }
+
+        return $infoPath;
+    }
+
+    /**
+     * @description: 获取漫画元数据
+     * @param {*} $infoPath
+     * @return {*}
+     */
+    private function get_manga_meta($infoPath)
+    {
+
+        $png = $infoPath . '/cover.png';
+        $PNG = $infoPath . '/cover.PNG';
+        $jpg = $infoPath . '/cover.jpg';
+        $JPG = $infoPath . '/cover.JPG';
+
+        // 获取info信息内的封面
+        if (is_file($png)) $cover = $png;
+        elseif (is_file($PNG)) $cover = $PNG;
+        elseif (is_file($jpg)) $cover = $jpg;
+        elseif (is_file($JPG)) $cover = $JPG;
+        else $cover = '';
+
+        $json = file_get_contents($infoPath . '/info.json');
+        $json = json_decode($json);
+
+        // 返回info结果集
+        return [
+            'title' => $json->title,
+            'author' => $json->author,
+            'star' => $json->star,
+            'describe' => $json->describe,
+            'publishDate' => $json->publishDate,
+            'mangaCover' => $cover,
+        ];
+    }
+
+    /**
+     * @description: 从元数据获取漫画角色
+     * @param {*} $infoPath
+     * @return {*}
+     */
+    private function get_manga_character($infoPath){
+        $json = file_get_contents($infoPath . '/info.json');
+        $json = json_decode($json);
+
+        if(!$json->character){
+            return [];
+        }
+
+        return $json->character;
+    }
+
+    /**
+     * @description: 从元数据获取漫画标签
+     * @param {*} $infoPath
+     * @return {*}
+     */
+    private function get_manga_tags($infoPath){
+        $json = file_get_contents($infoPath . '/info.json');
+        $json = json_decode($json);
+
+        if (!$json->tags) {
+            return [];
+        }
+
+        return $json->tags;
+    }
+}
+
+class MangaInfo
+{
+    public $title;
+    public $author;
+    public $star;
+    public $describe;
+    public $cover;
+    public $tags;
+    public $character;
+
+    public function __construct($data)
+    {
+        $this->title = $data['title'];
+        $this->author = $data['author'];
+        $this->star = $data['star'];
+        $this->describe = $data['describe'];
+        $this->cover = $data['cover'];
+        $this->tags = $data['tags'];
+        $this->character = $data['character'];
     }
 }
 
