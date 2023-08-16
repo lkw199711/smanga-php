@@ -3,8 +3,8 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 01:06:00
- * @FilePath: \lar-demo\app\Models\MangaTagSql.php
+ * @LastEditTime: 2023-08-16 01:13:59
+ * @FilePath: \lar-demo\app\Models\MetaSql.php
  */
 
 namespace App\Models;
@@ -13,7 +13,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MangaTagSql extends Model
+class MetaSql extends Model
 {
     use HasFactory;
     /**
@@ -21,8 +21,8 @@ class MangaTagSql extends Model
      *
      * @var string
      */
-    protected $table = 'mangaTag';
-    protected $primaryKey = 'mangaTagId';
+    protected $table = 'meta';
+    protected $primaryKey = 'metaId';
     protected $guarded = [];
     protected $hidden = [];
     public $timestamps = true;
@@ -39,41 +39,27 @@ class MangaTagSql extends Model
         return $date->format('Y-m-d H:i:s');
     }
     /**
-     * @description: 获取日志
-     * @param {*} $page
-     * @param {*} $pageSize
-     * @return {*}
-     */
-    public static function get($userid, $mangaId, $page, $pageSize)
-    {
-        $res = self::where('userid', $userid)->where('mangaId', $mangaId)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
-    }
-
-    /**
-     * @description: 以无分页模式获取漫画标签
-     * @param {*} $userid
+     * @description: 获取漫画元数据
      * @param {*} $mangaId
      * @return {*}
      */
-    public static function get_nopage($userid, $mangaId)
+    public static function get($mangaId)
     {
-        $res = self::join('tag','tag.tagId', 'mangaTag.tagId')
-        ->where('tag.userid', $userid)
-        ->where('mangaId', $mangaId)
-        ->get();
-        return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
+        $res = self::where('mangaId', $mangaId)->get();
+        return ['code' => 0, 'request' => '获取元数据成功', 'list' => $res];
     }
+
     /**
-     * @description: 获取全部扫描记录
+     * @description: 获取全部元数据
      * @return {*}
      */
     public static function get_all()
     {
         return self::select()->get();
     }
+
     /**
-     * @description: 新增日志
+     * @description: 新增元数据
      * @param {*} $data
      * @return {*}
      */
@@ -81,20 +67,6 @@ class MangaTagSql extends Model
     {
         try {
             return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
-        } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * @description: 删除漫画标签
-     * @param {*} $scanId
-     * @return {*}
-     */
-    public static function manga_tag_delete($mangaTagId)
-    {
-        try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($mangaTagId)];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
@@ -114,19 +86,5 @@ class MangaTagSql extends Model
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
-    }
-    /**
-     * @description: 获取漫画相应的
-     * @param {*} $userrId
-     * @param {*} $mangaId
-     * @return {*}
-     */
-    public static function get_by_mangaId($userrId,$mangaId){
-        $res = self::join('tag','tag.tagId','mangaTag.tagId')
-        ->where('userrId', $userrId)
-        ->where('mangaId',$mangaId)
-        ->get();
-
-        return $res;
     }
 }

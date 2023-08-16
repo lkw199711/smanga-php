@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-07-16 10:40:56
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-08-16 01:25:33
  * @FilePath: /php/laravel/app/Http/Controllers/Path.php
  */
 
@@ -123,7 +123,6 @@ class Path extends Controller
         $pathId = $request->post('pathId');
 
         MangaSql::manga_delete_by_path($pathId);
-        ChapterSql::chapter_delete_by_path($pathId);
         
         // 调试模式下同步运行
         $dispatchSync = Utils::config_read('debug', 'dispatchSync');

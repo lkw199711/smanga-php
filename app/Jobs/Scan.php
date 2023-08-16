@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
- * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-03 06:36:14
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-08-15 16:42:14
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -148,7 +148,7 @@ class Scan implements ShouldQueue
         $floderList = self::get_manga_list($this->path);
         $mangaList = [];
         foreach ($floderList as $key => $value) {
-            array_merge($mangaList, self::scan_path($value['path'], $this->pathId, $this->mediaId));
+            $mangaList = array_merge($mangaList, self::scan_path($value->mangaPath, $this->pathId, $this->mediaId));
         }
 
         return $mangaList;

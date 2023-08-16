@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 13:40:56
  * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-18 01:17:22
+ * @LastEditTime: 2023-08-16 22:44:41
  * @FilePath: \lar-demo\app\Models\BookMark.php
  */
 
@@ -88,6 +88,34 @@ class BookMarkSql extends Model
     {
         try {
             return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($bookmarkId)];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @description: 根据漫画id删除
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function delete_by_mangaid($mangaId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @description: 根据章节id删除
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function delete_by_chapter($chapterId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }

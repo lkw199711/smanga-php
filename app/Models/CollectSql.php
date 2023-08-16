@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-14 02:04:46
+ * @LastEditTime: 2023-08-16 22:44:53
  * @FilePath: /php/laravel/app/Models/CollectSql.php
  */
 
@@ -155,5 +155,33 @@ class CollectSql extends Model
     {
         $res = self::where('userId', $userId)->where('collectType', 'chapter')->where('chapterId', $chapterId)->first();
         return ['code' => 0, 'isCollect' => !!$res, 'collectInfo' => $res];
+    }
+
+    /**
+     * @description: 根据漫画id删除
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function delete_by_mangaid($mangaId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @description: 根据章节id删除
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function delete_by_chapter($chapterId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
     }
 }

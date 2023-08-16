@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-07-29 08:59:21
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-08-16 02:31:35
  * @FilePath: /php/laravel/app/Http/Controllers/Manga.php
  */
 
@@ -83,5 +83,17 @@ class Manga extends Controller
         $tagidArr = explode(',', $tagIds);
 
         return MangaSql::get_by_tags($tagidArr, $page, $pageSize);
+    }
+
+    /**
+     * @description: 获取漫画元数据
+     * @param {Request} $request
+     * @return {*}
+     */
+    public function get_manga_info(Request $request){
+        $mangaId = $request->post('mangaId');
+        $userId = $request->post('userId');
+
+        return MangaSql::get_manga_info($mangaId, $userId);
     }
 }

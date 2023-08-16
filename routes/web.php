@@ -2,8 +2,8 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
- * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-07-29 06:13:12
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-08-16 22:10:25
  * @FilePath: \lar-demo\routes\web.php
  */
 
@@ -55,6 +55,7 @@ Route::post('user/delete', [App\Http\Controllers\User::class, 'delete']);
 Route::post('history/get', [App\Http\Controllers\History::class, 'get']);
 Route::post('history/add', [App\Http\Controllers\History::class, 'add']);
 Route::post('history/delete', [App\Http\Controllers\History::class, 'delete']);
+Route::post('history/get_latest', [App\Http\Controllers\History::class, 'get_latest']);
 // 媒体库
 Route::post('media/get', [App\Http\Controllers\Media::class, 'get']);
 Route::post('media/add', [App\Http\Controllers\Media::class, 'add']);
@@ -66,8 +67,10 @@ Route::post('manga/add', [App\Http\Controllers\Manga::class, 'add']);
 Route::post('manga/update', [App\Http\Controllers\Manga::class, 'update']);
 Route::post('manga/delete', [App\Http\Controllers\Manga::class, 'delete']);
 Route::post('manga/get_by_tags', [App\Http\Controllers\Manga::class, 'get_by_tags']);
+Route::post('manga/get_manga_info', [App\Http\Controllers\Manga::class, 'get_manga_info']);
 // 章节
 Route::post('chapter/get', [App\Http\Controllers\Chapter::class, 'get']);
+Route::post('chapter/get_first', [App\Http\Controllers\Chapter::class, 'get_first']);
 Route::post('chapter/add', [App\Http\Controllers\Chapter::class, 'add']);
 Route::post('chapter/update', [App\Http\Controllers\Chapter::class, 'update']);
 Route::post('chapter/delete', [App\Http\Controllers\Chapter::class, 'delete']);

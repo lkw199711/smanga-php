@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-14 13:32:40
  * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-16 00:04:12
+ * @LastEditTime: 2023-08-16 22:57:04
  * @FilePath: /php/laravel/app/Http/Controllers/History.php
  */
 
@@ -25,6 +25,18 @@ class History extends Controller
         $page = $request->post('page');
         $pageSize = $request->post('pageSize');
         return HistorySql::get($userId, $page, $pageSize);
+    }
+    /**
+     * @description: 获取漫画最后一次阅读记录
+     * @param {Request} $request
+     * @return {*}
+     */
+    public function get_latest(Request $request)
+    {
+        $userId = $request->post('userId');
+        $mangaId = $request->post('mangaId');
+
+        return HistorySql::get_latest($mangaId, $userId);
     }
     /**
      * @description: 新增历史记录

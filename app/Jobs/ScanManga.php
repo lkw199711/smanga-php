@@ -15,6 +15,7 @@ use App\Models\characterSql;
 use App\Models\LogSql;
 use App\Models\ScanSql;
 use App\Models\MangaSql;
+use App\Models\MetaSql;
 
 class ScanManga implements ShouldQueue
 {
@@ -248,17 +249,40 @@ class ScanManga implements ShouldQueue
             $tags = self::get_manga_tags($mangaMetaPath);
             $character = self::get_manga_character($mangaMetaPath);
 
-            foreach($character as $val){
-                
+            foreach ($character as $val) {
+
                 $characterPicture = $mangaMetaPath . '/' . $val->name . '.jpg';
-                if (!is_file($characterPicture)) $characterPicture='';
+                if (!is_file($characterPicture)) $characterPicture = '';
 
                 characterSql::add([
-                    'characterName'=> $val->name,
-                    'description'=> $val->description,
-                    'characterPicture'=> $characterPicture,
-                    'mangaId'=>$mangaInfo['request']->mangaId,
+                    'characterName' => $val->name,
+                    'description' => $val->description,
+                    'characterPicture' => $characterPicture,
+                    'mangaId' => $mangaInfo['request']->mangaId,
                 ]);
+            }
+
+            $dir = dir($mangaMetaPath);
+            while (($file = $dir->read()) !== false) {
+                if ($file == '.' || $file == '..') continue;
+
+                // 插入banner图
+                if (preg_match('/banner/i', $file)){
+                    MetaSql::add([
+                        'metaType'=>'banner',
+                        'mangaId'=>$mangaInfo['request']->mangaId,
+                        'metaFile'=>$mangaMetaPath . '/' . $file,
+                    ]);
+                }
+
+                // 插入thu
+                if (preg_match('/thumbnail/i', $file)) {
+                    MetaSql::add([
+                        'metaType' => 'thumbnail',
+                        'mangaId' => $mangaInfo['request']->mangaId,
+                        'metaFile' => $mangaMetaPath . '/' . $file,
+                    ]);
+                }
             }
         }
 
@@ -418,7 +442,8 @@ class ScanManga implements ShouldQueue
      * @param {*} $path
      * @return {*}
      */
-    private function get_meta_path($path){
+    private function get_meta_path($path)
+    {
         if (!is_dir($path)) {
             $path = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $path);
         }
@@ -471,11 +496,12 @@ class ScanManga implements ShouldQueue
      * @param {*} $infoPath
      * @return {*}
      */
-    private function get_manga_character($infoPath){
+    private function get_manga_character($infoPath)
+    {
         $json = file_get_contents($infoPath . '/info.json');
         $json = json_decode($json);
 
-        if(!$json->character){
+        if (!$json->character) {
             return [];
         }
 
@@ -487,7 +513,8 @@ class ScanManga implements ShouldQueue
      * @param {*} $infoPath
      * @return {*}
      */
-    private function get_manga_tags($infoPath){
+    private function get_manga_tags($infoPath)
+    {
         $json = file_get_contents($infoPath . '/info.json');
         $json = json_decode($json);
 

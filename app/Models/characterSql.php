@@ -91,4 +91,20 @@ class characterSql extends Model
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
     }
+    
+    /**
+     * @description: 根据漫画id删除
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function delete_by_mangaId($mangaId)
+    {
+        try {
+            $request = self::where('mangaId', $mangaId)->delete();
+
+            return ['code' => 0, 'message' => '删除成功', 'request' => $request];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
 }

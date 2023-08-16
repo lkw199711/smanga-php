@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-16 00:03:45
+ * @LastEditTime: 2023-08-17 00:43:55
  * @FilePath: /php/laravel/app/Models/HistorySql.php
  */
 
@@ -34,6 +34,7 @@ class HistorySql extends Model
     public function setUpdatedAt($value)
     {
     }
+
     /**
      * @description: 获取历史记录
      * @param {*} $userId
@@ -50,13 +51,38 @@ class HistorySql extends Model
             ->addSelect('history.historyId')
             ->addSelect('m.mangaId', 'm.mangaName', 'm.mangaCover', 'm.browseType', 'm.direction', 'm.removeFirst')
             ->addSelect('c.chapterId', 'c.chapterName', 'c.chapterPath', 'c.chapterType')
-            ->where('userId', $userId)
+            ->where('history.userId', $userId)
             ->groupBy('history.chapterId')
             ->orderBy('nearTime')
             ->paginate($pageSize, ['*'], 'page', $page);
 
         return ['code' => 0, 'text' => '获取历史记录成功', 'list' => $res];
     }
+
+    /**
+     * @description: 获取最后一次阅读记录
+     * @param {*} $mangaId
+     * @param {*} $userId
+     * @return {*}
+     */
+    public static function get_latest($mangaId, $userId)
+    {
+        $res = self
+            ::join('chapter as c', 'history.chapterId', 'c.chapterId')
+            ->addSelect('history.historyId', 'history.mangaId', 'history.userId')
+            ->addSelect('c.chapterId', 'c.chapterName', 'c.chapterPath', 'c.chapterType', 'c.chapterCover', 'c.browseType')
+            ->where('history.mangaId', $mangaId)
+            ->where('history.userId', $userId)
+            ->orderBy('history.createTime')
+            ->first();
+
+        // 根据是否获取到数据生产状态码
+        $code = $res ? 0 : 1;
+
+
+        return ['code' => $code, 'text' => '获取历史记录成功', 'info' => $res];
+    }
+
     /**
      * @description: 添加历史记录
      * @param {*} $data
@@ -70,14 +96,17 @@ class HistorySql extends Model
             return ['code' => 1, 'text' => '系统错误', 'eMsg' => $e->getMessage()];
         }
     }
+
     /**
      * @description: 获取历史记录信息
      * @param {*} $historyId
      * @return {*}
      */
-    public static function info($historyId){
-        return self::where('historyId',$historyId)->first();
+    public static function info($historyId)
+    {
+        return self::where('historyId', $historyId)->first();
     }
+
     /**
      * @description: 删除历史记录
      * @param {*} $historyId
@@ -91,12 +120,28 @@ class HistorySql extends Model
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
     }
+
+    /**
+     * @description: 根据漫画id删除
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function delete_by_mangaid($mangaId)
+    {
+        try {
+            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+
     /**
      * @description: 根据章节id删除
      * @param {*} $chapterId
      * @return {*}
      */
-    public static function delete_by_chapter($chapterId){
+    public static function delete_by_chapter($chapterId)
+    {
         try {
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {

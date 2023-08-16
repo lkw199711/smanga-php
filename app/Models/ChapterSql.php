@@ -2,8 +2,8 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
- * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-31 20:51:22
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-08-16 22:45:05
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -29,6 +29,7 @@ class ChapterSql extends Model
 
     const CREATED_AT = 'createTime';
     const UPDATED_AT = 'updateTime';
+
     /**
      * @description: 格式化日期
      * @param {DateTimeInterface} $date
@@ -38,6 +39,7 @@ class ChapterSql extends Model
     {
         return $date->format('Y-m-d H:i:s');
     }
+
     /**
      * @description: 获取漫画章节列表-分页
      * @param {*} $userId
@@ -53,6 +55,7 @@ class ChapterSql extends Model
             ->paginate($pageSize, ['*'], 'page', $page);
         return ['code' => 0, 'request' => '获取成功', 'list' => $res];
     }
+
     /**
      * @description: 不分页获取
      * @param {*} $mangaId
@@ -72,6 +75,7 @@ class ChapterSql extends Model
             ->toSql();
         return ['code' => 0, 'request' => '获取成功', 'list' => new RequestList($res, count($res)), 'toSql' => $toSql];
     }
+
     /**
      * @description: 获取全部章节-管理用
      * @param {*} $mediaLimit
@@ -83,6 +87,19 @@ class ChapterSql extends Model
     {
         $res = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
         return ['code' => 0, 'request' => '获取成功', 'list' => $res];
+    }
+
+    /**
+     * @description: 获取此漫画的开篇章节
+     * @param {*} $mangaId
+     * @return {*}
+     */
+    public static function get_first($mangaId)
+    {
+        $orderText = self::get_order_text('name');
+        $res = self::where('mangaId', $mangaId)->orderByRaw($orderText)->first();
+
+        return ['code' => 0, 'request' => '获取成功', 'info' => $res];
     }
     /**
      * @description: 新增章节
@@ -136,10 +153,21 @@ class ChapterSql extends Model
      * @param {*} $chapterId
      * @return {*}
      */
-    public static function chapter_delete($chapterId)
+    public static function chapter_delete($chapterId, $deep = true)
     {
         try {
             CompressSql::compress_delete_by_chapter($chapterId);
+            // 相关表输出可能会与manga删除重复操作,使用deep变量区分是否需要做深度删除
+            if ($deep) {
+                // 删除相关历史记录
+                HistorySql::delete_by_chapter($chapterId);
+
+                // 删除相关书签
+                BookMarkSql::delete_by_chapter($chapterId);
+
+                // 删除相关收藏记录
+                CollectSql::delete_by_chapter($chapterId);
+            }
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];

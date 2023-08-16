@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-22 19:10:08
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-08-16 01:31:30
  * @FilePath: /php/laravel/app/Models/PathSql.php
  */
 
@@ -82,7 +82,6 @@ class PathSql extends Model
     {
         try {
             MangaSql::manga_delete_by_path($pathId);
-            ChapterSql::chapter_delete_by_path($pathId);
             return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($pathId)];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];

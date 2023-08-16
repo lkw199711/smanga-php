@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
- * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-15 01:01:47
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-08-16 23:21:58
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
@@ -26,7 +26,6 @@ Route::any('info',  function () {
 use Illuminate\Support\Facades\DB;
 
 Route::any('datatest', function () {
-    $aaa = '123';
     dump(DB::table('version')->get());
 });
 
