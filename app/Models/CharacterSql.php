@@ -3,8 +3,8 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 13:40:56
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-03 04:47:46
- * @FilePath: \lar-demo\app\Models\characterSql.php
+ * @LastEditTime: 2023-08-17 20:31:51
+ * @FilePath: \lar-demo\app\Models\CharacterSql.php
  */
 
 namespace App\Models;
@@ -12,7 +12,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class characterSql extends Model
+class CharacterSql extends Model
 {
     use HasFactory;
 

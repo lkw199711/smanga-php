@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 22:46:14
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-08-17 20:48:57
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -58,7 +58,7 @@ class MangaSql extends Model
         $list = $res->getCollection()->transform(function ($row) use ($userId) {
             $tagArr = MangaTagSql::get_nopage($userId, $row->mangaId);
 
-            $characterRes = characterSql::get($row->mangaId);
+            $characterRes = CharacterSql::get($row->mangaId);
             $characters = $characterRes['list'];
             $metaRes = MetaSql::get($row->mangaId);
             $metas = $metaRes['list'];
@@ -81,7 +81,7 @@ class MangaSql extends Model
     {
         $info = self::where('mangaId', $mangaId)->first();
         $meta = MetaSql::get($mangaId)['list'];
-        $character = characterSql::get($mangaId)['list'];
+        $character = CharacterSql::get($mangaId)['list'];
         $tags = MangaTagSql::get_nopage($userId, $mangaId)['list'];
 
         return [
@@ -184,7 +184,7 @@ class MangaSql extends Model
             MangaTagSql::delete_by_mangaId($mangaId);
 
             // 删除角色元数据
-            characterSql::delete_by_mangaId($mangaId);
+            CharacterSql::delete_by_mangaId($mangaId);
 
             // 删除其他元数据
             MetaSql::delete_by_mangaId($mangaId);
@@ -197,6 +197,9 @@ class MangaSql extends Model
 
             // 删除相关收藏记录
             CollectSql::delete_by_mangaid($mangaId);
+
+            // 删除压缩转换记录
+            CompressSql::compress_delete_by_manga($mangaId);
 
             return ['code' => 0, 'message' => '删除成功'];
         } catch (\Exception $e) {

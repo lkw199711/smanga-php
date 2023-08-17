@@ -11,11 +11,13 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Utils;
 use App\Models\ChapterSql;
-use App\Models\characterSql;
+use App\Models\CharacterSql;
 use App\Models\LogSql;
 use App\Models\ScanSql;
 use App\Models\MangaSql;
+use App\Models\MangaTagSql;
 use App\Models\MetaSql;
+use App\Models\TagSql;
 
 class ScanManga implements ShouldQueue
 {
@@ -249,12 +251,38 @@ class ScanManga implements ShouldQueue
             $tags = self::get_manga_tags($mangaMetaPath);
             $character = self::get_manga_character($mangaMetaPath);
 
+            $tagColor = '#a0d911';
+
+            // 写入标签
+            foreach ($tags as $val) {
+
+                $sqlRes = TagSql::has_tag($val);
+                // 如果没有则新建标签
+                if (!$sqlRes) {
+
+                    $res = TagSql::add([
+                        'userId' => 0,
+                        'tagName' => $val,
+                        'tagColor' => $tagColor
+                    ]);
+
+                    $sqlRes = $res['request'];
+                }
+
+                // 添加标签关联
+                MangaTagSql::add([
+                    'tagId' => $sqlRes->tagId,
+                    'mangaId' => $mangaInfo['request']->mangaId,
+                ]);
+            }
+
+            // 写入banner图
             foreach ($character as $val) {
 
                 $characterPicture = $mangaMetaPath . '/' . $val->name . '.jpg';
                 if (!is_file($characterPicture)) $characterPicture = '';
 
-                characterSql::add([
+                CharacterSql::add([
                     'characterName' => $val->name,
                     'description' => $val->description,
                     'characterPicture' => $characterPicture,
@@ -267,11 +295,11 @@ class ScanManga implements ShouldQueue
                 if ($file == '.' || $file == '..') continue;
 
                 // 插入banner图
-                if (preg_match('/banner/i', $file)){
+                if (preg_match('/banner/i', $file)) {
                     MetaSql::add([
-                        'metaType'=>'banner',
-                        'mangaId'=>$mangaInfo['request']->mangaId,
-                        'metaFile'=>$mangaMetaPath . '/' . $file,
+                        'metaType' => 'banner',
+                        'mangaId' => $mangaInfo['request']->mangaId,
+                        'metaFile' => $mangaMetaPath . '/' . $file,
                     ]);
                 }
 

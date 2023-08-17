@@ -2,8 +2,8 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 22:45:05
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-08-17 20:50:06
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -167,6 +167,9 @@ class ChapterSql extends Model
 
                 // 删除相关收藏记录
                 CollectSql::delete_by_chapter($chapterId);
+
+                // 删除压缩转换记录
+                CompressSql::compress_delete_by_chapter($chapterId);
             }
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {

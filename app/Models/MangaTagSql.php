@@ -2,8 +2,8 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 01:06:00
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-08-17 21:14:36
  * @FilePath: \lar-demo\app\Models\MangaTagSql.php
  */
 
@@ -46,7 +46,7 @@ class MangaTagSql extends Model
      */
     public static function get($userid, $mangaId, $page, $pageSize)
     {
-        $res = self::where('userid', $userid)->where('mangaId', $mangaId)->paginate($pageSize, ['*'], 'page', $page);
+        $res = self::whereIn('userid', [$userid, 0])->where('mangaId', $mangaId)->paginate($pageSize, ['*'], 'page', $page);
         return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
     }
 
@@ -58,10 +58,10 @@ class MangaTagSql extends Model
      */
     public static function get_nopage($userid, $mangaId)
     {
-        $res = self::join('tag','tag.tagId', 'mangaTag.tagId')
-        ->where('tag.userid', $userid)
-        ->where('mangaId', $mangaId)
-        ->get();
+        $res = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
+            ->whereIn('tag.userid', [$userid, 0])
+            ->where('mangaId', $mangaId)
+            ->get();
         return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
     }
     /**
@@ -121,11 +121,12 @@ class MangaTagSql extends Model
      * @param {*} $mangaId
      * @return {*}
      */
-    public static function get_by_mangaId($userrId,$mangaId){
-        $res = self::join('tag','tag.tagId','mangaTag.tagId')
-        ->where('userrId', $userrId)
-        ->where('mangaId',$mangaId)
-        ->get();
+    public static function get_by_mangaId($userrId, $mangaId)
+    {
+        $res = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
+            ->where('userrId', $userrId)
+            ->where('mangaId', $mangaId)
+            ->get();
 
         return $res;
     }

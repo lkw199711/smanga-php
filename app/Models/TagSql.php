@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-07-28 08:36:00
+ * @LastEditTime: 2023-08-17 20:44:29
  * @FilePath: \lar-demo\app\Models\TagSql.php
  */
 
@@ -106,5 +106,15 @@ class TagSql extends Model
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
+    }
+
+    /**
+     * @description: 是否有某个标签
+     * @param {*} $tagName
+     * @return {*}
+     */
+    public static function has_tag($tagName)
+    {
+        return self::where('userId', 0)->where('tagName', $tagName)->first();
     }
 }

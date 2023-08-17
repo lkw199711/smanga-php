@@ -634,10 +634,11 @@ class Deploy extends Controller
                 `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标签说明',
                 `createTime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
                 `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '升级时间',
-                PRIMARY KEY (`tagId`) USING BTREE
-                ) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+                PRIMARY KEY (`tagId`) USING BTREE,
+                UNIQUE INDEX `o`(`tagName`, `userId`) USING BTREE COMMENT '标签唯一'
+                ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
             ");
-            
+
             // 创建漫画标签表
             $link->query("CREATE TABLE IF NOT EXISTS `mangaTag`  (
                 `mangaTagId` int(0) NOT NULL AUTO_INCREMENT COMMENT '漫画关联标签主键',
@@ -647,14 +648,61 @@ class Deploy extends Controller
                 `updateTime` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
                 PRIMARY KEY (`mangaTagId`) USING BTREE,
                 UNIQUE INDEX `manga-tag`(`mangaId`, `tagId`) USING BTREE COMMENT '相同的标签不能多次添加'
-                ) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+                ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
             ");
-            
+
             // 新增3.3.7版本记录
             VersionSql::add([
                 'version' => '3.3.7',
                 'versionDescribe' => '新增自定义标签功能',
                 'createTime' => '2023-07-29 16:03:00'
+            ]);
+        }
+
+        // 338
+        if (array_search('3.3.8', $vers) === false) {
+            // 创建角色表
+            $link->query("CREATE TABLE IF NOT EXISTS `character`  (
+                    `characterId` int(0) NOT NULL AUTO_INCREMENT,
+                    `characterName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                    `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                    `characterPicture` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                    `createTime` datetime(0) NULL DEFAULT NULL,
+                    `updateTime` datetime(0) NULL DEFAULT NULL,
+                    `mangaId` int(0) NULL DEFAULT NULL,
+                    PRIMARY KEY (`characterId`) USING BTREE,
+                    UNIQUE INDEX `o`(`characterName`, `mangaId`) USING BTREE COMMENT '同一漫画不能有重名的角色'
+                ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+            ");
+
+            // 创建元数据表
+            $link->query("CREATE TABLE IF NOT EXISTS `meta`  (
+                `metaId` int(0) NOT NULL AUTO_INCREMENT,
+                `metaType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                `mangaId` int(0) NULL DEFAULT NULL,
+                `metaFile` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                `metaContent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                `createTime` datetime(0) NULL DEFAULT NULL,
+                `updateTime` datetime(0) NULL DEFAULT NULL,
+                PRIMARY KEY (`metaId`) USING BTREE,
+                UNIQUE INDEX `o`(`mangaId`, `metaFile`) USING BTREE COMMENT '同个漫画的某个元数据不能引入两次'
+                ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+            ");
+
+            // 在manga表中新增元数据字段
+            $link->query("ALTER TABLE `manga` 
+                ADD COLUMN `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '元数据标题',
+                ADD COLUMN `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '作者',
+                ADD COLUMN `star` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '评价',
+                ADD COLUMN `describe` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '作品简介',
+                ADD COLUMN `publishDate` date NULL DEFAULT NULL COMMENT '发布日期';
+            ");
+
+            // 新增3.3.8版本记录
+            VersionSql::add([
+                'version' => '3.3.8',
+                'versionDescribe' => '新增元数据刮削功能',
+                'createTime' => '2023-08-18 03:15:00'
             ]);
         }
 
@@ -664,7 +712,7 @@ class Deploy extends Controller
 
         if (is_file($installLock)) {
             // 记录版本 代表初始化结束
-            Utils::write_txt($versionFile, '3.3.7');
+            Utils::write_txt($versionFile, '3.3.8');
         }
 
         return [
