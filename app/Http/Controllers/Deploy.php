@@ -715,6 +715,9 @@ class Deploy extends Controller
             Utils::write_txt($versionFile, '3.3.8');
         }
 
+        // 重启守护进程与队列服务
+        shell_exec('supervisorctl restart all');
+
         return [
             'code' => 0, 'vers' => $vers, 'message' => '初始化成功!'
         ];
