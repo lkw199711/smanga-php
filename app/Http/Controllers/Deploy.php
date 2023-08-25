@@ -73,8 +73,8 @@ class Deploy extends Controller
     }
     public static function database_init(Request $request)
     {
-        $configPath = getenv('SMANGA_CONFIG');
-        $AppPath = getenv('SMANGA_APP');
+        $configPath = Utils::get_env('SMANGA_CONFIG');
+        $AppPath = Utils::get_env('SMANGA_APP');
         $installLock = "$configPath/install.lock";
         $versionFile = "$AppPath/version";
 

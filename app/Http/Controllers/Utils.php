@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-17 23:35:49
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-31 21:19:30
+ * @LastEditTime: 2023-08-26 07:50:29
  * @FilePath: /php/laravel/app/Http/Controllers/Utils.php
  */
 
@@ -14,6 +14,18 @@ use Illuminate\Support\Facades\Storage;
 
 class Utils extends Controller
 {
+    /**
+     * @description: 获取环境变量
+     * @param {*} $key
+     * @return {*}
+     */
+    public static function get_env($key)
+    {
+        $value = shell_exec('echo $' . $key);
+        // 通过exec返回的结果带有换行符 需要手动去除
+        $value = preg_replace("/\r|\n/", "", $value);
+        return $value;
+    }
     /**
      * [writeTxt description]
      * @param  [string] $file [description]
@@ -89,7 +101,7 @@ class Utils extends Controller
     public static function config_read($title, $key)
     {
         // INI配置文件
-        $file = getenv('SMANGA_CONFIG_INI');
+        $file = Utils::get_env('SMANGA_CONFIG_INI');
 
         if (!$file) {
             die(json_encode([
@@ -115,7 +127,7 @@ class Utils extends Controller
     public static function config_write($title, $key, $value)
     {
         // INI配置文件
-        $file = getenv('SMANGA_CONFIG_INI');
+        $file = Utils::get_env('SMANGA_CONFIG_INI');
 
         $data = filesize($file) == 0 ? [] : parse_ini_file($file, true);
         $data[$title][$key] = $value;

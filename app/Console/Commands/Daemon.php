@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 01:43:27
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-07-16 09:39:58
+ * @LastEditTime: 2023-08-26 07:49:50
  * @FilePath: /php/laravel/app/Console/Commands/Daemon.php
  */
 
@@ -65,9 +65,9 @@ class Daemon extends Command
 
 
 
-            $configPath = getenv('SMANGA_CONFIG');
+            $configPath = Utils::get_env('SMANGA_CONFIG');
             $installLock = "$configPath/install.lock";
-            $AppPath = getenv('SMANGA_APP');
+            $AppPath = Utils::get_env('SMANGA_APP');
             $versionFile = "$AppPath/version";
 
             // 未完成初次部署 等待
@@ -160,8 +160,8 @@ class Daemon extends Command
     {
         $pathArr = DB::table('path')->where('autoScan', 1)->get();
 
-        $AppPath = getenv('SMANGA_APP');
-        $configPath = getenv('SMANGA_CONFIG');
+        $AppPath = Utils::get_env('SMANGA_APP');
+        $configPath = Utils::get_env('SMANGA_CONFIG');
         $supervisorConfigPath = "$configPath/auto-scan";
         // 定时扫描时间间隔
         $interval = (int)self::clac_interval();
@@ -198,8 +198,8 @@ class Daemon extends Command
     {
         $pathArr = DB::table('path')->where('autoScan', 1)->get();
 
-        $AppPath = getenv('SMANGA_APP');
-        $configPath = getenv('SMANGA_CONFIG');
+        $AppPath = Utils::get_env('SMANGA_APP');
+        $configPath = Utils::get_env('SMANGA_CONFIG');
         $supervisorConfigPath = "$configPath/auto-scan";
         // echo $AppPath;exit;
         foreach ($pathArr as $val) {

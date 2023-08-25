@@ -2,13 +2,14 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 11:22:23
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-20 11:31:50
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-08-26 07:50:38
  * @FilePath: /php/laravel/app/Http/Middleware/DeployStatusCheck.php
  */
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Utils;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -23,7 +24,7 @@ class DeployStatusCheck
      */
     public function handle(Request $request, Closure $next)
     {
-        $configPath = getenv('SMANGA_CONFIG');
+        $configPath = Utils::get_env('SMANGA_CONFIG');
         $installLock = "$configPath/install.lock";
 
         if (!is_file($installLock)) {

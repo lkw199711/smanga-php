@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-18 01:56:35
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-26 07:01:43
+ * @LastEditTime: 2023-08-26 07:51:14
  * @FilePath: /php/laravel/app/Jobs/Compress.php
  */
 
@@ -106,7 +106,7 @@ class Compress implements ShouldQueue
         $poster = self::get_file_list($extractTo)[0];
 
         // 封面存放路径
-        $posterPath = getenv('SMANGA_POSTER');
+        $posterPath = Utils::get_env('SMANGA_POSTER');
         $copyPoster = "$posterPath/$chapterInfo->chapterId.png";
 
         if ($poster) {
@@ -132,8 +132,8 @@ class Compress implements ShouldQueue
      */
     private static function get_cache_path($path)
     {
-        $cacheBasePath = getenv('SMANGA_COMPRESS');
-        if(!$cacheBasePath) $cacheBasePath = '/data/compress';
+        $cacheBasePath = Utils::get_env('SMANGA_COMPRESS');
+        
         #设置日期路径
         $date = '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
         $md5 = md5($path);
@@ -149,7 +149,7 @@ class Compress implements ShouldQueue
     function read_ini_compress($title, $key)
     {
         // INI配置文件
-        $file = getenv('SMANGA_CONFIG_INI');
+        $file = Utils::get_env('SMANGA_CONFIG_INI');
 
         if (!$file) {
             die(json_encode([
