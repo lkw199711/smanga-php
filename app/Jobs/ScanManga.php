@@ -147,10 +147,24 @@ class ScanManga implements ShouldQueue
                 'browseType' => $this->defaultBrowse
             ];
 
-            ChapterSql::add($chapterData);
+            $chapterAddRes = ChapterSql::add($chapterData);
+
+            $chapterId = $chapterAddRes->chapterId;
+
+            // 是否自动解压的配置项
+            $autoCompress = Utils::config_read('scan', 'autoCompress');      
+            if($autoCompress){
+                // 调试模式下同步运行
+                $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+                if ($dispatchSync) {
+                    Compress::dispatchSync(0, $chapterId);
+                } else {
+                    Compress::dispatch(0, $chapterId)->onQueue('compress');
+                }
+            }
+
         } else {
             // 普通结构
-
             $chapterList = self::get_chapter_list($this->mangaPath);
             $chapterListSql = [];
 
@@ -216,7 +230,22 @@ class ScanManga implements ShouldQueue
                             'browseType' => $this->defaultBrowse
                         ];
 
-                        ChapterSql::add($chapterData);
+                        $chapterAddRes = ChapterSql::add($chapterData);
+
+                        // 获取刚刚新增的章节id
+                        $chapterId = $chapterAddRes->chapterId;
+
+                        // 是否自动解压的配置项
+                        $autoCompress = Utils::config_read('scan', 'autoCompress');
+                        if ($autoCompress) {
+                            // 调试模式下同步运行
+                            $dispatchSync = Utils::config_read('debug', 'dispatchSync');
+                            if ($dispatchSync) {
+                                Compress::dispatchSync(0, $chapterId);
+                            } else {
+                                Compress::dispatch(0, $chapterId)->onQueue('compress');
+                            }
+                        }
                     }
                 }
             }

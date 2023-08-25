@@ -3,6 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\PublicClass\InterfacesRequest;
+
+class ServeSettingRequest extends InterfacesRequest
+{
+    public $interval;
+    public $autoCompress;
+}
 
 class ServeSetting extends Controller
 {
@@ -13,43 +21,41 @@ class ServeSetting extends Controller
      */
     public function get(Request $request)
     {
+        // 验证用户是否有权限进行服务器设置 (待完成)
         $userId = $request->post('userId');
-        return Utils::config_read('sql', '');
+
+        $interval = Utils::config_read('scan', 'interval');
+        $autoCompress = Utils::config_read('scan', 'autoCompress');
+
+        $res = new ServeSettingRequest();
+        $res->status = 'get server setting success.';
+        $res->interval = $interval;
+        $res->autoCompress = $autoCompress;
+
+        return new JsonResponse($res);
     }
 
     /**
-     * @description: 扫描项设置
+     * @description: 设置服务器配置项
      * @param {Request} $request
      * @return {*}
      */
-    public function scan_set(Request $request)
+    public function set(Request $request)
     {
-        $interval = $request->post('interval');
+        $title = $request->post('title');
+        $key = $request->post('key');
+        $value = $request->post('value');
 
-        Utils::config_write('scan', 'interval', $interval);
+        Utils::config_write($title, $key, $value);
 
-        return [
-            'code' => 0,
-            'message' => '设置扫描选项成功',
-            'data' => [
-                'interval' => Utils::config_read('scan', 'interval')
-            ]
-        ];
+        $response = new ServeSettingRequest();
+        $response->message = '设置成功';
+        $response->status = 'set server setting success.';
+        $response->$key = Utils::config_read($title, $key);
+
+        return new JsonResponse($response);
     }
-    /**
-     * @description: 扫描项获取
-     * @return {*}
-     */
-    public function scan_get()
-    {
-        return [
-            'code' => 0,
-            'request' => '获取扫描设置成功',
-            'data' => [
-                'interval' => Utils::config_read('scan', 'interval')
-            ]
-        ];
-    }
+
     /**
      * @description: 压缩配置项设置
      * @param {Request} $request
@@ -112,7 +118,8 @@ class ServeSetting extends Controller
      * @param {Request} $request
      * @return {*}
      */
-    public function daemon_set(Request $request){
+    public function daemon_set(Request $request)
+    {
         $time = $request->post('time');
 
         Utils::config_write('daemon', 'time', $time);

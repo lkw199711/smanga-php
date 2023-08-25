@@ -2,8 +2,8 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 22:10:25
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-08-26 04:47:29
  * @FilePath: \lar-demo\routes\web.php
  */
 
@@ -94,8 +94,8 @@ Route::post('image/get', [App\Http\Controllers\Image::class, 'get']);
 Route::post('log/get', [App\Http\Controllers\Log::class, 'get']);
 
 // 服务器设置
-Route::post('serve/scan/set', [App\Http\Controllers\ServeSetting::class, 'scan_set']);
-Route::post('serve/scan/get', [App\Http\Controllers\ServeSetting::class, 'scan_get']);
+Route::post('serve/get', [App\Http\Controllers\ServeSetting::class, 'get']);
+Route::post('serve/set', [App\Http\Controllers\ServeSetting::class, 'set']);
 
 Route::post('serve/imagick/get', [App\Http\Controllers\ServeSetting::class, 'imagick_get']);
 Route::post('serve/imagick/set', [App\Http\Controllers\ServeSetting::class, 'imagick_set']);

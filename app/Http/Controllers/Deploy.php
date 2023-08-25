@@ -716,12 +716,22 @@ class Deploy extends Controller
             ]);
         }
 
+        // 340
+        if (array_search('3.4.0', $vers) === false) {
+            // 新增3.4.0版本记录
+            VersionSql::add([
+                'version' => '3.4.0',
+                'versionDescribe' => '自动解压设置项',
+                'createTime' => '2023-08-26 06:33:00'
+            ]);
+        }
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
         if (is_file($installLock)) {
             // 记录版本 代表初始化结束
-            Utils::write_txt($versionFile, '3.3.9');
+            Utils::write_txt($versionFile, '3.4.0');
         }
 
         // 重启守护进程与队列服务
