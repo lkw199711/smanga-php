@@ -132,7 +132,8 @@ class Compress implements ShouldQueue
      */
     private static function get_cache_path($path)
     {
-        $cacheBasePath = getenv('SMANGA_COMPRESS') || '/data/compress';
+        $cacheBasePath = getenv('SMANGA_COMPRESS');
+        if(!$cacheBasePath) $cacheBasePath = '/data/compress';
         #设置日期路径
         $date = '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
         $md5 = md5($path);
