@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-17 20:48:57
+ * @LastEditTime: 2023-08-25 14:09:36
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -145,13 +145,28 @@ class MangaSql extends Model
      * @param {*} $pageSize
      * @return {*}
      */
-    public static function manga_search($keyWord, $mediaLimit, $order, $page, $pageSize)
+    public static function manga_search($keyWord, $mediaLimit, $order, $page, $pageSize, $userId=0)
     {
         $res = self::whereNotIn('mediaId', $mediaLimit)
             ->where('mangaName', 'like', "%{$keyWord}%")
             ->paginate($pageSize, ['*'], 'page', $page);
 
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+        $count = $res->total();
+        $list = $res->getCollection()->transform(function ($row) use ($userId) {
+            $tagArr = MangaTagSql::get_nopage($userId, $row->mangaId);
+
+            $characterRes = CharacterSql::get($row->mangaId);
+            $characters = $characterRes['list'];
+            $metaRes = MetaSql::get($row->mangaId);
+            $metas = $metaRes['list'];
+
+            $row->tags = $tagArr['list'];
+            $row->characters = $characters;
+            $row->metas = $metas;
+            return $row;
+        });
+
+        return ['code' => 0, 'text' => '获取成功', 'list' => $list, 'count' => $count];
     }
     /**
      * @description: 修改漫画信息

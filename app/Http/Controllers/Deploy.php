@@ -706,13 +706,22 @@ class Deploy extends Controller
             ]);
         }
 
+        // 339
+        if (array_search('3.3.9', $vers) === false) {
+            // 新增3.3.9版本记录
+            VersionSql::add([
+                'version' => '3.3.9',
+                'versionDescribe' => '漫画管理新增搜索框',
+                'createTime' => '2023-08-25 20:19:00'
+            ]);
+        }
 
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
         if (is_file($installLock)) {
             // 记录版本 代表初始化结束
-            Utils::write_txt($versionFile, '3.3.8');
+            Utils::write_txt($versionFile, '3.3.9');
         }
 
         // 重启守护进程与队列服务

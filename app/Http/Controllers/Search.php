@@ -1,4 +1,11 @@
 <?php
+/*
+ * @Author: lkw199711 lkw199711@163.com
+ * @Date: 2023-08-25 15:07:22
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-08-25 15:07:23
+ * @FilePath: /smanga-php/app/Http/Controllers/Search.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -28,11 +35,11 @@ class Search extends Controller
         $mediaLimit = UserSql::get_media_limit($userId);
 
         if ($searchType === 'manga') {
-            return MangaSql::manga_search($searchText, $mediaLimit, $order, $page, $pageSize);
-        } 
-        
+            return MangaSql::manga_search($searchText, $mediaLimit, $order, $page, $pageSize, $userId);
+        }
+
         if ($searchType === 'chapter') {
-            return ChapterSql::chapter_search($searchText, $mediaLimit, $order, $page, $pageSize);
+            return ChapterSql::chapter_search($searchText, $mediaLimit, $order, $page, $pageSize, $userId);
         }
     }
 }
