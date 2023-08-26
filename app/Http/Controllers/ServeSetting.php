@@ -8,8 +8,8 @@ use App\Http\PublicClass\InterfacesRequest;
 
 class ServeSettingRequest extends InterfacesRequest
 {
-    public $interval;
-    public $autoCompress;
+    public string $interval;
+    public int $autoCompress;
 }
 
 class ServeSetting extends Controller
