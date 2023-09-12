@@ -726,6 +726,16 @@ class Deploy extends Controller
             ]);
         }
 
+        // 341
+        if (array_search('3.4.1', $vers) === false) {
+            // 新增3.4.1版本记录
+            VersionSql::add([
+                'version' => '3.4.1',
+                'versionDescribe' => '临时增加登出按钮',
+                'createTime' => '2023-09-13 02:07:00'
+            ]);
+        }
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
