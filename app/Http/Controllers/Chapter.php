@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 21:04:52
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-09-14 05:09:59
  * @FilePath: /php/laravel/app/Http/Controllers/Chapter.php
  */
 
@@ -37,15 +37,15 @@ class Chapter extends Controller
         // 获取媒体库权限
         $mediaLimit = UserSql::get_media_limit($userId);
 
-        if ($page) {
-            // 通过媒体库获取漫画章节
+        if ($mangaId && $page) {
+            // 正常获取漫画章节列表
             return ChapterSql::get($mangaId, $page, $pageSize, $order);
-        } elseif ($mangaId) {
-            // 无分页获取章节
-            return ChapterSql::get_nopage($mangaId, $order);
-        } else {
-            // 获取全部漫画
+        } elseif ($page) {
+            // 在章节管理中获取章节列表
             return ChapterSql::get_nomanga($mediaLimit, $page, $pageSize, $order);
+        } elseif ($mangaId) {
+            // 获取左侧章节菜单
+            return ChapterSql::get_nopage($mangaId, $order);
         }
     }
     

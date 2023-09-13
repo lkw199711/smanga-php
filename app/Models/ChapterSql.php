@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-17 20:50:06
+ * @LastEditTime: 2023-09-14 05:13:25
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -50,9 +50,14 @@ class ChapterSql extends Model
     {
         $orderText = self::get_order_text($order);
 
-        $res = self::where('mangaId', $mangaId)
-            ->orderByRaw($orderText)
+        $sql = self::where('mangaId', $mangaId)
+            ->orderByRaw($orderText);
+
+        $res = $sql
             ->paginate($pageSize, ['*'], 'page', $page);
+
+        $toSql = $sql->toSql();
+        
         return ['code' => 0, 'request' => '获取成功', 'list' => $res];
     }
 
