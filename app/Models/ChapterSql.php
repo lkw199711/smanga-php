@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-14 05:13:25
+ * @LastEditTime: 2023-09-14 09:28:12
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -57,7 +57,7 @@ class ChapterSql extends Model
             ->paginate($pageSize, ['*'], 'page', $page);
 
         $toSql = $sql->toSql();
-        
+
         return ['code' => 0, 'request' => '获取成功', 'list' => $res];
     }
 
@@ -132,10 +132,13 @@ class ChapterSql extends Model
     {
         $orderText = self::get_order_text($order);
 
-        $res = self::whereNotIn('mediaId', $mediaLimit)
+        $base = self::whereNotIn('mediaId', $mediaLimit)
             ->where('chapterName', 'like', "%{$keyWord}%")
-            ->orderByRaw($orderText)
-            ->paginate($pageSize, ['*'], 'page', $page);
+            ->orderByRaw($orderText);
+
+        // $sql = $base->toSql();
+
+        $res = $base->paginate($pageSize, ['*'], 'page', $page);
 
         return ['code' => 0, 'request' => '获取成功', 'list' => $res];
     }
@@ -230,6 +233,8 @@ class ChapterSql extends Model
      */
     private static function get_order_text($order)
     {
+        if(!$order) $order = 'name';
+
         $orderText = $order;
         if (array_search($order, ['id', 'idDesc']) !== false) {
             $orderText = 'chapterId';

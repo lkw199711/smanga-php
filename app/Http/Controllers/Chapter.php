@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-14 05:09:59
+ * @LastEditTime: 2023-09-14 09:24:23
  * @FilePath: /php/laravel/app/Http/Controllers/Chapter.php
  */
 
@@ -30,12 +30,17 @@ class Chapter extends Controller
         $page = $request->post('page');
         $pageSize = $request->post('pageSize');
         $order = $request->post('order');
+        $keyWord = $request->post('keyWord');
 
         // 默认排序规则
         if (!$order) $order = 'id';
 
         // 获取媒体库权限
         $mediaLimit = UserSql::get_media_limit($userId);
+
+        if ($keyWord) {
+            return ChapterSql::chapter_search($keyWord, $mediaLimit, $order, $page, $pageSize, $userId);
+        }
 
         if ($mangaId && $page) {
             // 正常获取漫画章节列表
