@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-18 01:56:35
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-26 07:51:14
+ * @LastEditTime: 2023-09-21 08:14:22
  * @FilePath: /php/laravel/app/Jobs/Compress.php
  */
 
@@ -133,6 +133,9 @@ class Compress implements ShouldQueue
     private static function get_cache_path($path)
     {
         $cacheBasePath = Utils::get_env('SMANGA_COMPRESS');
+
+        // 未获取到解压缩目录 使用默认目录
+        if(!$cacheBasePath) $cacheBasePath = '/data/compress';
         
         #设置日期路径
         $date = '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
