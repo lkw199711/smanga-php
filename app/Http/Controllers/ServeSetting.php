@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Http\PublicClass\InterfacesRequest;
+use App\Http\PublicClass\InterfacesResponse;
 
-class ServeSettingRequest extends InterfacesRequest
+class ServeSettingResponse extends InterfacesResponse
 {
     public string $interval;
     public int $autoCompress;
@@ -27,7 +27,7 @@ class ServeSetting extends Controller
         $interval = Utils::config_read('scan', 'interval');
         $autoCompress = Utils::config_read('scan', 'autoCompress');
 
-        $res = new ServeSettingRequest();
+        $res = new ServeSettingResponse();
         $res->status = 'get server setting success.';
         $res->interval = $interval;
         $res->autoCompress = $autoCompress;

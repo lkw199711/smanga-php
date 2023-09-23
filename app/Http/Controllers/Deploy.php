@@ -766,6 +766,16 @@ class Deploy extends Controller
             ]);
         }
 
+        // 345
+        if (array_search('3.4.5', $vers) === false) {
+            // 新增3.4.5版本记录
+            VersionSql::add([
+                'version' => '3.4.5',
+                'versionDescribe' => '漫画详情页面新增收藏按钮',
+                'createTime' => '2023-09-23 13:52:00'
+            ]);
+        }
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 

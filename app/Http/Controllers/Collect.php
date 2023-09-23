@@ -2,15 +2,18 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 19:03:12
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-14 01:56:56
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-09-23 13:46:33
  * @FilePath: \lar-demo\app\Http\Controllers\Collect.php
  */
 
 namespace App\Http\Controllers;
 
 use App\Models\CollectSql;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Http\PublicClass\InterfacesResponse;
+use App\Http\PublicClass\ListResponse;
 
 class Collect extends Controller
 {
@@ -29,19 +32,30 @@ class Collect extends Controller
 
         // 模型处理数据
         if ($collectType === 'manga') {
-            $res =  CollectSql::get_manga($userId, $page, $pageSize);
+            $sqlList =  CollectSql::get_manga($userId, $page, $pageSize);
         } else {
-            $res =  CollectSql::get_chapter($userId, $page, $pageSize);
+            $sqlList =  CollectSql::get_chapter($userId, $page, $pageSize);
         }
-        return $res;
+
+        $res = new ListResponse($sqlList->list, $sqlList->count, '收藏列表获取成功');
+        return new JsonResponse($res);
     }
+
+    /**
+     * @description: 获取所有的收藏记录
+     * @param {Request} $request
+     * @return {*}
+     */
     public function all(Request $request)
     {
         // 接受参数
         ['page' => $page, 'pageSize' => $pageSize] = $request->input();
 
         // 模型处理数据
-        return CollectSql::get($page, $pageSize);
+        $sqlList = CollectSql::get($page, $pageSize);
+
+        $res = new ListResponse($sqlList->list, $sqlList->count, '收藏列表获取成功');
+        return new JsonResponse($res);
     }
 
     /**
@@ -69,10 +83,15 @@ class Collect extends Controller
             $data['mangaName'] = $mangaName;
         }
 
-        return CollectSql::add($data);
+        $request = CollectSql::add($data);
+
+        $res = new InterfacesResponse($request, '添加收藏成功');
+
+        return new JsonResponse($res);
     }
+
     /**
-     * @description: 删除书签
+     * @description: 删除收藏
      * @param {Request} $request
      * @return {*}
      */
@@ -85,20 +104,35 @@ class Collect extends Controller
         $collectId = $request->post('collectId');
 
         // 有id 则根据id删除
-        if($collectId) return CollectSql::remove($collectId);
+        if ($collectId) $sqlRes = CollectSql::remove($collectId);
 
-        if($collectType==='manga') return CollectSql::remove_manga($userId,$targetId);
+        if ($collectType === 'manga') $sqlRes = CollectSql::remove_manga($userId, $targetId);
 
-        if($collectType==='chapter') return CollectSql::remove_chapter($userId,$targetId);
+        if ($collectType === 'chapter') $sqlRes = CollectSql::remove_chapter($userId, $targetId);
+
+        $res = new InterfacesResponse($sqlRes, '移除收藏成功');
+
+        return new JsonResponse($res);
     }
-    public function is_collect(Request $request){
+
+    /**
+     * @description: 查询漫画是否收藏
+     * @param {Request} $request
+     * @return {*}
+     */
+    public function is_collect(Request $request)
+    {
         // 接受参数
         $userId = $request->post('userId');
         $collectType = $request->post('collectType');
         $targetId = $request->post('targetId');
 
-        if($collectType==='manga') return CollectSql::is_manga_collected($userId,$targetId);
+        if ($collectType === 'manga') $sqlRes = CollectSql::is_manga_collected($userId, $targetId);
 
-        if($collectType==='chapter') return CollectSql::is_chapter_collected($userId,$targetId);
+        if ($collectType === 'chapter') $sqlRes = CollectSql::is_chapter_collected($userId, $targetId);
+
+        $res = new InterfacesResponse(!!$sqlRes, '', $sqlRes ? '漫画已被收藏' : '漫画没有被收藏');
+
+        return new jsonResponse($res);
     }
 }

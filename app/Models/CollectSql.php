@@ -2,13 +2,15 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 22:44:53
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-09-23 12:43:14
  * @FilePath: /php/laravel/app/Models/CollectSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -40,16 +42,19 @@ class CollectSql extends Model
      */
     public static function get_manga($userId, $page = 1, $pageSize = 10)
     {
-        $list = self::join('manga', 'collect.mangaId', 'manga.mangaId')
+        $sql = self::join('manga', 'collect.mangaId', 'manga.mangaId')
             ->where('userId', '=', $userId)
-            ->where('collectType', 'manga')
-            ->paginate($pageSize, ['*'], 'page', $page);
+            ->where('collectType', 'manga');
+        
+        // 分页原型
+        $paginate = $sql->paginate($pageSize, ['*'], 'page', $page);
 
-        $toSql = self::join('manga', 'collect.mangaId', 'manga.mangaId')
-            ->where('userId', '=', $userId)
-            ->where('collectType', 'manga')->toSql();
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
 
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功', 'tosql'=> $toSql];
+        return new SqlList($list, $count);
     }
     /**
      * @description: 获取章节收藏
@@ -60,13 +65,19 @@ class CollectSql extends Model
      */
     public static function get_chapter($userId, $page = 1, $pageSize = 10)
     {
-        $list = self::join('manga', 'collect.mangaId', 'manga.mangaId')
+        $sql = self::join('manga', 'collect.mangaId', 'manga.mangaId')
             ->join('chapter', 'collect.chapterId', 'chapter.chapterId')
             ->where('userId', $userId)
-            ->where('collectType', 'chapter')
-            ->paginate($pageSize, ['*'], 'page', $page);
+            ->where('collectType', 'chapter');
 
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        $paginate = $sql->paginate($pageSize, ['*'], 'page', $page);
+
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
     /**
      * @description: 获取全部收藏
@@ -75,8 +86,14 @@ class CollectSql extends Model
      */
     public static function all($page = 1, $pageSize = 10)
     {
-        $list = self::paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        $paginate = self::paginate($pageSize, ['*'], 'page', $page);
+        
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
     /**
      * @description: 新增收藏
@@ -86,9 +103,9 @@ class CollectSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle('新增收藏错误', $e->getMessage());
         }
     }
     /**
@@ -99,9 +116,9 @@ class CollectSql extends Model
     public static function remove($collectId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($collectId)];
+            return self::destroy($collectId);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle('移除收藏错误', $e->getMessage());
         }
     }
     /**
@@ -114,9 +131,9 @@ class CollectSql extends Model
     {
         try {
             $res = self::where('userId', $userId)->where('collectType', 'manga')->where('mangaId', $mangaId)->delete();
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($res)];
+            return $res;
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("移除漫画收藏错误,mangaId=>$mangaId", $e->getMessage());
         }
     }
     /**
@@ -129,9 +146,9 @@ class CollectSql extends Model
     {
         try {
             $res = self::where('userId', $userId)->where('collectType', 'chapter')->where('chapterId', $chapterId)->delete();
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($res)];
+            return $res;
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("移除章节收藏错误,chapterId=>$chapterId", $e->getMessage());
         }
     }
     /**
@@ -143,7 +160,7 @@ class CollectSql extends Model
     public static function is_manga_collected($userId, $mangaId)
     {
         $res = self::where('userId', $userId)->where('collectType', 'manga')->where('mangaId', $mangaId)->first();
-        return ['code' => 0, 'isCollect' => !!$res, 'collectInfo' => $res];
+        return $res;
     }
     /**
      * @description: 验证章节是否收藏
@@ -154,7 +171,7 @@ class CollectSql extends Model
     public static function is_chapter_collected($userId, $chapterId)
     {
         $res = self::where('userId', $userId)->where('collectType', 'chapter')->where('chapterId', $chapterId)->first();
-        return ['code' => 0, 'isCollect' => !!$res, 'collectInfo' => $res];
+        return $res;
     }
 
     /**
@@ -167,7 +184,7 @@ class CollectSql extends Model
         try {
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("移除漫画收藏错误,mangaId=>$mangaId", $e->getMessage());
         }
     }
 
@@ -181,7 +198,7 @@ class CollectSql extends Model
         try {
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("移除章节收藏错误,chapterId=>$chapterId", $e->getMessage());
         }
     }
 }
