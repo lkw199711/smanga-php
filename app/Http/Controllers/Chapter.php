@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-14 09:24:23
+ * @LastEditTime: 2023-09-24 23:19:04
  * @FilePath: /php/laravel/app/Http/Controllers/Chapter.php
  */
 
@@ -95,8 +95,10 @@ class Chapter extends Controller
     {
         $userId = $request->post('userId');
         $chapterId = $request->post('chapterId');
-        $chapterPath = $request->post('chapterPath');
-        $chapterType = $request->post('chapterType');
+        
+        $chapterIndo = ChapterSql::chapter_info($chapterId);
+        $chapterPath = $chapterIndo->chapterPath;
+        $chapterType = $chapterIndo->chapterType;
 
         if (Utils::is_compressed($chapterType)) {
 

@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-14 09:28:12
+ * @LastEditTime: 2023-09-24 23:13:49
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -249,6 +249,15 @@ class ChapterSql extends Model
         $desc = preg_match('/Desc$/', $order) ? 'DESC' : 'ASC';
 
         return $orderText . ' ' . $desc;
+    }
+
+    /**
+     * @description: 获取单个章节信息
+     * @param {*} $chapterId
+     * @return {*}
+     */
+    public static function chapter_info($chapterId){
+        return self::where('chapterId', $chapterId)->first();
     }
 }
 
