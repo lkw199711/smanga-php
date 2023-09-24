@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-17 20:44:29
+ * @LastEditTime: 2023-09-24 12:13:00
  * @FilePath: \lar-demo\app\Models\TagSql.php
  */
 
@@ -56,7 +56,7 @@ class TagSql extends Model
      */
     public static function get_no_page($userId)
     {
-        $res = self::where('userId', $userId)->get();
+        $res = self::whereIn('tag.userid', [$userId, 0])->get();
         return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
     }
     /**

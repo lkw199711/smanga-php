@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-17 21:14:36
+ * @LastEditTime: 2023-09-24 12:13:14
  * @FilePath: \lar-demo\app\Models\MangaTagSql.php
  */
 
@@ -56,12 +56,15 @@ class MangaTagSql extends Model
      * @param {*} $mangaId
      * @return {*}
      */
-    public static function get_nopage($userid, $mangaId)
+    public static function get_nopage($userId, $mangaId)
     {
-        $res = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
-            ->whereIn('tag.userid', [$userid, 0])
-            ->where('mangaId', $mangaId)
-            ->get();
+        $sql = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
+            ->whereIn('tag.userId', [$userId, 0])
+            ->where('mangaId', $mangaId);
+
+        // $toSql = $sql->toSql();
+
+        $res = $sql->get();
         return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
     }
     /**
