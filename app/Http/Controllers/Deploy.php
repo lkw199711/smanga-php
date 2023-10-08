@@ -800,8 +800,7 @@ class Deploy extends Controller
         if (array_search('3.4.8', $vers) === false) {
             // 生成任务队列表
             $link->query("CREATE TABLE IF NOT EXISTS `lastRead` (
-                CREATE TABLE `lastRead`  (
-                `lastReadId` int unsigned NOT NULL,
+                `lastReadId` int UNSIGNED NOT NULL AUTO_INCREMENT,
                 `page` int(0) NOT NULL,
                 `chapterId` int(0) NOT NULL,
                 `mangaId` int(0) NOT NULL,
