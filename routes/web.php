@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-26 04:47:29
+ * @LastEditTime: 2023-10-08 06:55:25
  * @FilePath: \lar-demo\routes\web.php
  */
 
@@ -56,6 +56,10 @@ Route::post('history/get', [App\Http\Controllers\History::class, 'get']);
 Route::post('history/add', [App\Http\Controllers\History::class, 'add']);
 Route::post('history/delete', [App\Http\Controllers\History::class, 'delete']);
 Route::post('history/get_latest', [App\Http\Controllers\History::class, 'get_latest']);
+// 最后阅读记录
+Route::post('lastread/get', [App\Http\Controllers\LastRead::class, 'get']);
+Route::post('lastread/add', [App\Http\Controllers\LastRead::class, 'add']);
+Route::post('lastread/get_latest', [App\Http\Controllers\LastRead::class, 'get_latest']);
 // 媒体库
 Route::post('media/get', [App\Http\Controllers\Media::class, 'get']);
 Route::post('media/add', [App\Http\Controllers\Media::class, 'add']);
@@ -105,8 +109,9 @@ Route::post('serve/daemon/set', [App\Http\Controllers\ServeSetting::class, 'daem
 
 
 Route::any('test', function (Request $request) {
-    $pathId = $request->post('pathId');
-    App\Jobs\Scan::dispatch($pathId);
+    // $pathId = $request->post('pathId');
+    // App\Jobs\Scan::dispatch($pathId);
+    return '123';
 });
 
 Route::post('path/scan', [App\Http\Controllers\Path::class, 'scan']);

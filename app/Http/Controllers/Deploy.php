@@ -796,6 +796,30 @@ class Deploy extends Controller
             ]);
         }
 
+        // 348
+        if (array_search('3.4.8', $vers) === false) {
+            // 生成任务队列表
+            $link->query("CREATE TABLE IF NOT EXISTS `lastRead` (
+                CREATE TABLE `lastRead`  (
+                `lastReadId` int unsigned NOT NULL,
+                `page` int(0) NOT NULL,
+                `chapterId` int(0) NOT NULL,
+                `mangaId` int(0) NOT NULL,
+                `userId` int(0) NOT NULL,
+                `createTime` datetime(0) NULL DEFAULT NULL,
+                `updateTime` datetime(0) NULL DEFAULT NULL,
+                PRIMARY KEY (`lastReadId`) USING BTREE
+                ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+            ");
+
+            // 新增3.4.8版本记录
+            VersionSql::add([
+                'version' => '3.4.8',
+                'versionDescribe' => '新增"继续阅读模块",准确定位"继续阅读"功能.',
+                'createTime' => '2023-10-08 19:33:16'
+            ]);
+        }
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 

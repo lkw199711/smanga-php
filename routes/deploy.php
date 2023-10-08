@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 23:21:58
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-01 17:03:35
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
@@ -59,4 +59,11 @@ Route::any('test/scan', function () {
     ]);
 
     // return '日志扫描记录成功';
+});
+
+
+Route::any('test/ajax', function () {
+    // $pathId = $request->post('pathId');
+    // App\Jobs\Scan::dispatch($pathId);
+    return '123';
 });
