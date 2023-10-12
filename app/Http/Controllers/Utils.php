@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-17 23:35:49
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-26 07:50:29
+ * @LastEditTime: 2023-10-12 23:31:11
  * @FilePath: /php/laravel/app/Http/Controllers/Utils.php
  */
 
@@ -25,6 +25,18 @@ class Utils extends Controller
         // 通过exec返回的结果带有换行符 需要手动去除
         $value = preg_replace("/\r|\n/", "", $value);
         return $value;
+    }
+    /**
+     * @description: 转化布尔值
+     * @param {*} $val
+     * @return {*}
+     */    
+    public static function bool($val)
+    {
+        if (!$val) return false;
+        if ($val === 'false') return false;
+        if ($val === '0') return false;
+        return true;
     }
     /**
      * [writeTxt description]

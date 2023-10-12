@@ -819,6 +819,21 @@ class Deploy extends Controller
             ]);
         }
 
+        // 349
+        if (array_search('3.4.9', $vers) === false) {
+            // 生成任务队列表
+            $link->query("ALTER TABLE `smanga`.`lastRead` 
+                ADD COLUMN `finish` int(1) ZEROFILL NOT NULL DEFAULT 0 COMMENT '已完成阅读' AFTER `page`;
+            ");
+
+            // 新增3.4.9版本记录
+            VersionSql::add([
+                'version' => '3.4.9',
+                'versionDescribe' => '修复列表视图无法上下滚动的问题',
+                'createTime' => '2023-10-12 21:40:21'
+            ]);
+        }
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 

@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-14 13:32:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-08 06:52:21
+ * @LastEditTime: 2023-10-12 23:34:11
  * @FilePath: /php/laravel/app/Http/Controllers/LastRead.php
  */
 
@@ -51,7 +51,7 @@ class LastRead extends Controller
 
         return new JsonResponse($res);
     }
-    
+
     /**
      * @description: 新增历史记录
      * @param {Request} $request
@@ -60,6 +60,7 @@ class LastRead extends Controller
     public function add(Request $request)
     {
         $page = $request->post('page');
+        $finish = $request->post('finish');
         $chapterId = $request->post('chapterId');
         $mangaId = $request->post('mangaId');
         $userId = $request->post('userId');
@@ -69,7 +70,10 @@ class LastRead extends Controller
         if (!$mangaId) return;
         if (!$chapterId) return;
 
-        $data = ['page' => $page, 'mangaId' => $mangaId, 'chapterId' => $chapterId, 'userId' => $userId];
+        // 传递过来的值为字符串的false 所以需要转化一下
+        $finish = Utils::bool($finish) ? 1 : 0;
+
+        $data = ['page' => $page, 'finish' => $finish, 'mangaId' => $mangaId, 'chapterId' => $chapterId, 'userId' => $userId];
 
         return LastReadSql::add($mangaId, $data);
     }

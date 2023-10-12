@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-08 16:44:30
+ * @LastEditTime: 2023-10-12 23:38:24
  * @FilePath: /php/laravel/app/Models/lastReadSql.php
  */
 
@@ -57,7 +57,10 @@ class LastReadSql extends Model
      */
     public static function get($userId, $page, $pageSize)
     {
-        $base = self::join('manga', 'manga.mangaId', 'lastRead.mangaId')->where('userId', $userId)->orderBy('lastRead.updateTime', 'desc');
+        $base = self::join('manga', 'manga.mangaId', 'lastRead.mangaId')
+            ->join('chapter', 'chapter.chapterId', 'lastRead.chapterId')
+            ->where('userId', $userId)->where('finish', 0)
+            ->orderBy('lastRead.updateTime', 'desc');
 
         // 分页原型
         $paginate = $base->paginate($pageSize, ['*'], 'page', $page);
