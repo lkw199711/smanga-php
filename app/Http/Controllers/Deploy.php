@@ -822,7 +822,7 @@ class Deploy extends Controller
         // 349
         if (array_search('3.4.9', $vers) === false) {
             // 生成任务队列表
-            $link->query("ALTER TABLE `smanga`.`lastRead` 
+            $link->query("ALTER TABLE `lastRead` 
                 ADD COLUMN `finish` int(1) ZEROFILL NOT NULL DEFAULT 0 COMMENT '已完成阅读' AFTER `page`;
             ");
 
