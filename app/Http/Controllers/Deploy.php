@@ -829,8 +829,18 @@ class Deploy extends Controller
             // 新增3.4.9版本记录
             VersionSql::add([
                 'version' => '3.4.9',
-                'versionDescribe' => '修复列表视图无法上下滚动的问题',
+                'versionDescribe' => '修复列表视图无法上下滚动的问题.',
                 'createTime' => '2023-10-12 21:40:21'
+            ]);
+        }
+
+        // 350
+        if (array_search('3.5.0', $vers) === false) {
+            // 新增3.5.0版本记录
+            VersionSql::add([
+                'version' => '3.5.0',
+                'versionDescribe' => '菜单分类并修改图表.',
+                'createTime' => '2023-10-18 23:47:35'
             ]);
         }
 
