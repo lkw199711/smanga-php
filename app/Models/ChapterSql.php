@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-24 23:13:49
+ * @LastEditTime: 2023-10-19 21:04:00
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -170,6 +170,9 @@ class ChapterSql extends Model
                 // 删除相关历史记录
                 HistorySql::delete_by_chapter($chapterId);
 
+                // 删除最后阅读记录
+                LastReadSql::delete_by_chapter($chapterId);
+
                 // 删除相关书签
                 BookMarkSql::delete_by_chapter($chapterId);
 
@@ -179,6 +182,14 @@ class ChapterSql extends Model
                 // 删除压缩转换记录
                 CompressSql::compress_delete_by_chapter($chapterId);
             }
+
+            // 删除章节封面 (外置)
+            $chapterInfo = self::where('chapterId', $chapterId)->first();
+            if (is_file($chapterInfo->chapterCover)) {
+                unlink($chapterInfo->chapterCover);
+                // shell_exec("rm -rf \"{$chapterInfo->chapterCover}\"");
+            }
+
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
@@ -206,8 +217,10 @@ class ChapterSql extends Model
     public static function chapter_delete_by_manga($mangaId)
     {
         try {
-            CompressSql::compress_delete_by_manga($mangaId);
-            self::where('mangaId', $mangaId)->delete();
+            $chapters = self::where('mangaId', $mangaId)->get();
+            foreach ($chapters as $val) {
+                self::chapter_delete($val->chapterId, false);
+            }
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }
@@ -233,7 +246,7 @@ class ChapterSql extends Model
      */
     private static function get_order_text($order)
     {
-        if(!$order) $order = 'name';
+        if (!$order) $order = 'name';
 
         $orderText = $order;
         if (array_search($order, ['id', 'idDesc']) !== false) {
@@ -256,7 +269,8 @@ class ChapterSql extends Model
      * @param {*} $chapterId
      * @return {*}
      */
-    public static function chapter_info($chapterId){
+    public static function chapter_info($chapterId)
+    {
         return self::where('chapterId', $chapterId)->first();
     }
 }

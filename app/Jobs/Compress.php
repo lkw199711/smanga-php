@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-18 01:56:35
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-21 08:14:22
+ * @LastEditTime: 2023-10-20 00:10:26
  * @FilePath: /php/laravel/app/Jobs/Compress.php
  */
 
@@ -107,7 +107,7 @@ class Compress implements ShouldQueue
 
         // 封面存放路径
         $posterPath = Utils::get_env('SMANGA_POSTER');
-        $copyPoster = "$posterPath/$chapterInfo->chapterId.png";
+        $copyPoster = "{$posterPath}/smanga_chapter_{$chapterInfo->chapterId}.png";
 
         if ($poster) {
             copy($poster, $copyPoster);
@@ -115,7 +115,7 @@ class Compress implements ShouldQueue
             if (!$chapterInfo->mangaCover) {
                 MangaSql::manga_update($chapterInfo->mangaId, ['mangaCover' => $copyPoster]);
             }
-    
+
             if (!$chapterInfo->chapterCover) {
                 ChapterSql::chapter_update($chapterInfo->chapterId, ['chapterCover' => $copyPoster]);
             }
@@ -135,8 +135,8 @@ class Compress implements ShouldQueue
         $cacheBasePath = Utils::get_env('SMANGA_COMPRESS');
 
         // 未获取到解压缩目录 使用默认目录
-        if(!$cacheBasePath) $cacheBasePath = '/data/compress';
-        
+        if (!$cacheBasePath) $cacheBasePath = '/data/compress';
+
         #设置日期路径
         $date = '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
         $md5 = md5($path);

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\UnCompressTools;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -151,9 +152,34 @@ class ScanManga implements ShouldQueue
 
             $chapterId = $chapterAddRes->chapterId;
 
+            // 通过部分解压获取封面图
+            if (!$this->mangaCover) {
+                // 封面存放路径
+                $posterPath = Utils::get_env('SMANGA_POSTER');
+                if (!$posterPath) $posterPath = '/data/poster';
+                // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
+                $copyPoster = "{$posterPath}/smanga_chapter_{$chapterId}.png";
+
+                // 用于判断是否成功提取了图片
+                $size = false;
+                if ($this->mangaType === 'zip') {
+                    $size = UnCompressTools::ext_zip($this->mangaPath, $copyPoster);
+                }
+
+                if ($this->mangaType === 'rar') {
+                    $size = UnCompressTools::ext_rar($this->mangaPath, $posterPath, "smanga_chapter_{$chapterId}.png");
+                }
+
+                // 提取图片成功 存入库
+                if ($size) {
+                    ChapterSql::chapter_update($chapterId, ['chapterCover' => $copyPoster]);
+                    MangaSql::manga_update($mangaInfo['request']->mangaId, ['mangaCover' => $copyPoster]);
+                }
+            }
+
             // 是否自动解压的配置项
-            $autoCompress = Utils::config_read('scan', 'autoCompress');      
-            if($autoCompress){
+            $autoCompress = Utils::config_read('scan', 'autoCompress');
+            if ($autoCompress) {
                 // 调试模式下同步运行
                 $dispatchSync = Utils::config_read('debug', 'dispatchSync');
                 if ($dispatchSync) {
@@ -162,7 +188,6 @@ class ScanManga implements ShouldQueue
                     Compress::dispatch(0, $chapterId)->onQueue('compress');
                 }
             }
-
         } else {
             // 普通结构
             $chapterList = self::get_chapter_list($this->mangaPath);
@@ -180,7 +205,7 @@ class ScanManga implements ShouldQueue
                 $chapterListSql = $res['list']->data;
             }
 
-            // 获取漫画是吧(数据库错误)
+            // 获取漫画失败(数据库错误)
             if ($mangaInfo['code'] == 1) {
                 echo "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}";
                 // 记录错误日志
@@ -234,6 +259,34 @@ class ScanManga implements ShouldQueue
 
                         // 获取刚刚新增的章节id
                         $chapterId = $chapterAddRes->chapterId;
+
+                        // 通过部分解压获取封面图
+                        if (!$val->chapterCover) {
+                            // 封面存放路径
+                            $posterPath = Utils::get_env('SMANGA_POSTER');
+                            if (!$posterPath) $posterPath = '/data/poster';
+                            // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
+                            $copyPoster = "{$posterPath}/smanga_chapter_{$chapterId}.png";
+
+                            // 用于判断是否成功提取了图片
+                            $size = false;
+                            if ($val->chapterType === 'zip') {
+                                $size = UnCompressTools::ext_zip($val->chapterPath, $copyPoster);
+                            }
+
+                            if ($val->chapterType === 'rar') {
+                                $size = UnCompressTools::ext_rar($val->chapterPath, $posterPath, "smanga_chapter_{$chapterId}.png");
+                            }
+
+                            // 提取图片成功 存入库
+                            if ($size) {
+                                ChapterSql::chapter_update($chapterId, ['chapterCover' => $copyPoster]);
+                                
+                                if(!$this->mangaCover){
+                                    MangaSql::manga_update($mangaInfo['request']->mangaId, ['mangaCover' => $copyPoster]);
+                                }
+                            }
+                        }
 
                         // 是否自动解压的配置项
                         $autoCompress = Utils::config_read('scan', 'autoCompress');
@@ -475,23 +528,18 @@ class ScanManga implements ShouldQueue
      */
     private function get_poster($path, $name)
     {
-        $png = $name . '.png';
-        $PNG = $name . '.PNG';
-        $jpg = $name . '.jpg';
-        $JPG = $name . '.JPG';
+        $extensions = ['.png', '.PNG', '.jpg', '.JPG', 'webp', 'WEBP'];
+        foreach ($extensions as $extension) {
+            $filename = $name . $extension;
+            if (is_file($filename)) {
+                return $filename;
+            }
+        }
 
-        if (is_file($png)) return $png;
-        if (is_file($PNG)) return $PNG;
-        if (is_file($jpg)) return $jpg;
-        if (is_file($JPG)) return $JPG;
+        $firstImg = self::get_first_image($path);
+        if ($firstImg) return $firstImg;
 
         return self::get_first_image($path);
-
-        // if (count($list) > 0) {
-        //     return $list[0];
-        // } else {
-        //     return '';
-        // }
     }
 
     /**

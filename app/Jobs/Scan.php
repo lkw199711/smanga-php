@@ -2,8 +2,8 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-15 16:42:14
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-20 01:10:23
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -209,7 +209,7 @@ class Scan implements ShouldQueue
 
             // 是文件
             if (!is_dir($targetPath)) {
-                if (preg_match('/(.cbr|.cbz|.zip|.epub)/i', $file)) {
+                if (preg_match('/(.cbr|.cbz|.zip|.epub)$/i', $file)) {
                     $type = 'zip';
                 } elseif (preg_match('/.7z/i', $file)) {
                     $type = '7z';
