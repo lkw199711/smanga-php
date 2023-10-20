@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-10-19 19:28:34
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-20 14:52:38
+ * @LastEditTime: 2023-10-20 15:49:40
  * @FilePath: /smanga-php/app/Http/Controllers/UnCompressTools.php
  */
 
@@ -82,7 +82,8 @@ class UnCompressTools extends Controller
     {
         putenv('LANG=en_US.UTF-8');
 
-        $command = "7za l -ba '{$zipFile}' | grep -oP '\S+$'";
+        // $command = "7za l -ba '{$zipFile}' | grep -oP '\S+$'";
+        $command = "7za l -ba -slt '{$zipFile}'";
         // Run the 7za command to list the contents of the 7z file
         exec($command, $fileList);
 
@@ -96,7 +97,8 @@ class UnCompressTools extends Controller
 
             if (in_array(strtolower($ext), $imageExtensions)) {
                 // This is an image file, you can use it as a cover
-                $coverImage = basename($file);
+                $lineTxt = str_replace('Path = ', '', $file);
+                $coverImage = basename($lineTxt);
                 break;
             }
         }
