@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-10-19 19:28:34
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-20 01:51:37
+ * @LastEditTime: 2023-10-20 14:52:38
  * @FilePath: /smanga-php/app/Http/Controllers/UnCompressTools.php
  */
 
@@ -13,6 +13,7 @@ class UnCompressTools extends Controller
 {
     public static function ext_zip($zipFile, $coverImagePath)
     {
+        putenv('LANG=en_US.UTF-8');
         $zip = new \ZipArchive();
 
         if ($zip->open($zipFile) === TRUE) {
@@ -75,5 +76,49 @@ class UnCompressTools extends Controller
         } else {
             return false;
         }
+    }
+
+    public static function ext_7z($zipFile, $extractedFolder, $newName)
+    {
+        putenv('LANG=en_US.UTF-8');
+
+        $command = "7za l -ba '{$zipFile}' | grep -oP '\S+$'";
+        // Run the 7za command to list the contents of the 7z file
+        exec($command, $fileList);
+
+        $coverImage = null;
+
+        // Iterate through the file list to find the first image
+        foreach ($fileList as $file) {
+            // Check if the file has an image extension (e.g., jpg, png, gif)
+            $imageExtensions = array('jpg', 'jpeg', 'png', 'gif', 'webp');
+            $ext = pathinfo($file, PATHINFO_EXTENSION);
+
+            if (in_array(strtolower($ext), $imageExtensions)) {
+                // This is an image file, you can use it as a cover
+                $coverImage = basename($file);
+                break;
+            }
+        }
+
+        if ($coverImage !== null) {
+
+            // Run the 7za command to extract the cover image
+            exec("7za e '{$zipFile}' -o'{$extractedFolder}' '*{$coverImage}'");
+
+            // Move the extracted cover image to the local path
+            rename("$extractedFolder/$coverImage", "$extractedFolder/$newName");
+
+            return true;
+        } else {
+            return false;
+        }
+
+        // function isImageFile($file)
+        // {
+        //     $imageExtensions = array('jpg', 'jpeg', 'png', 'gif');
+        //     $ext = pathinfo($file, PATHINFO_EXTENSION);
+        //     return in_array(strtolower($ext), $imageExtensions);
+        // }
     }
 }

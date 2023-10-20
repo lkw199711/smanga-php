@@ -170,6 +170,10 @@ class ScanManga implements ShouldQueue
                     $size = UnCompressTools::ext_rar($this->mangaPath, $posterPath, "smanga_chapter_{$chapterId}.png");
                 }
 
+                if ($this->mangaType === '7z') {
+                    $size = UnCompressTools::ext_7z($this->mangaPath, $posterPath, "smanga_chapter_{$chapterId}.png");
+                }
+
                 // 提取图片成功 存入库
                 if ($size) {
                     ChapterSql::chapter_update($chapterId, ['chapterCover' => $copyPoster]);
@@ -276,6 +280,10 @@ class ScanManga implements ShouldQueue
 
                             if ($val->chapterType === 'rar') {
                                 $size = UnCompressTools::ext_rar($val->chapterPath, $posterPath, "smanga_chapter_{$chapterId}.png");
+                            }
+
+                            if ($val->chapterType === '7z') {
+                                $size = UnCompressTools::ext_7z($val->chapterPath, $posterPath, "smanga_chapter_{$chapterId}.png");
                             }
 
                             // 提取图片成功 存入库
