@@ -864,6 +864,15 @@ class Deploy extends Controller
             ]);
         }
 
+        if (array_search('3.5.3', $vers) === false) {
+            // 新增3.5.3版本记录
+            VersionSql::add([
+                'version' => '3.5.3',
+                'versionDescribe' => '散图漫画封面删除bug修复.',
+                'createTime' => '2023-10-21 21:19:15'
+            ]);
+        }
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 

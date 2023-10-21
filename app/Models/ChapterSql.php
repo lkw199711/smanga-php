@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-19 21:04:00
+ * @LastEditTime: 2023-10-21 21:23:17
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -183,12 +183,12 @@ class ChapterSql extends Model
                 CompressSql::compress_delete_by_chapter($chapterId);
             }
 
-            // 删除章节封面 (外置)
-            $chapterInfo = self::where('chapterId', $chapterId)->first();
-            if (is_file($chapterInfo->chapterCover)) {
-                unlink($chapterInfo->chapterCover);
-                // shell_exec("rm -rf \"{$chapterInfo->chapterCover}\"");
-            }
+            // 删除章节封面 (外置) 因为散图问题 暂时弃用
+            // $chapterInfo = self::where('chapterId', $chapterId)->first();
+            // if (is_file($chapterInfo->chapterCover)) {
+            //     unlink($chapterInfo->chapterCover);
+            //     // shell_exec("rm -rf \"{$chapterInfo->chapterCover}\"");
+            // }
 
             return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
         } catch (\Exception $e) {

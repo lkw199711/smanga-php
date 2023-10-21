@@ -290,8 +290,8 @@ class ScanManga implements ShouldQueue
                             // 提取图片成功 存入库
                             if ($size) {
                                 ChapterSql::chapter_update($chapterId, ['chapterCover' => $copyPoster]);
-                                
-                                if(!$this->mangaCover){
+
+                                if (!$this->mangaCover) {
                                     MangaSql::manga_update($mangaInfo['request']->mangaId, ['mangaCover' => $copyPoster]);
                                     $this->mangaCover = $copyPoster;
                                 }
@@ -529,7 +529,7 @@ class ScanManga implements ShouldQueue
      * @param {*} $name
      * @return {*}
      */
-    private function get_poster($path, $name)
+    private function get_poster($path, $name, $chapterId = 0)
     {
         $extensions = ['.png', '.PNG', '.jpg', '.JPG', 'webp', 'WEBP'];
         foreach ($extensions as $extension) {
@@ -540,9 +540,20 @@ class ScanManga implements ShouldQueue
         }
 
         $firstImg = self::get_first_image($path);
-        if ($firstImg) return $firstImg;
-
-        return self::get_first_image($path);
+        if ($firstImg) {
+            /*
+            // 封面存放路径
+            $posterPath = Utils::get_env('SMANGA_POSTER');
+            if (!$posterPath) $posterPath = '/data/poster';
+            // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
+            $copyPoster = "{$posterPath}/smanga_chapter_{$chapterId}.png";
+            // 复制到poster目录
+            copy($firstImg, $copyPoster);
+*/
+            return $firstImg;
+        } else {
+            return '';
+        }
     }
 
     /**
