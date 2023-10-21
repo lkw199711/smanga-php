@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-21 17:28:11
+ * @LastEditTime: 2023-10-22 02:49:30
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -85,7 +85,7 @@ class Scan implements ShouldQueue
         // 如果目录正在被扫描,则放弃此次扫描任务
         if (ScanSql::get_by_pathid($this->pathId)) {
             $params = "pathId->{$this->pathId}";
-            LogSql::add_default("路径正在扫描，放弃当前扫描任务 $params");
+            LogSql::add_default("路径 {$this->path} 正在扫描，放弃当前扫描任务 $params");
             return false;
         }
 
@@ -123,6 +123,7 @@ class Scan implements ShouldQueue
 
             self::scan_end();
         } elseif (count($mangaList) == 0) {
+            LogSql::add_warning("路径 {$this->path} 没有检测到漫画，请确认漫画文件存在以及媒体库设置!");
             // 如果为空目录 则直接结束扫描
             self::scan_end();
         } else {

@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-21 17:54:23
+ * @LastEditTime: 2023-10-22 03:02:14
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
@@ -46,6 +46,16 @@ Route::any('test/log', function () {
 
     return '日志添加成功';
 });
+
+Route::any('test/yu', function () {
+    $data = ['mangaName' => '漫画名称'];
+    echo "漫画 '{$data['mangaName']}' 插入失败。";
+    dump("漫画 '{$data['mangaName']}' 插入失败。");
+
+    return '日志添加成功';
+});
+
+
 
 Route::any('test/scan', function () {
     $path = '/mnt/single0/single0/18manga/00日漫/出包王女';

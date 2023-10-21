@@ -3,13 +3,14 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-19 18:54:17
+ * @LastEditTime: 2023-10-22 03:03:18
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
 use App\Http\Controllers\History;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -131,9 +132,10 @@ class MangaSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("漫画 '{$data['mangaName']}' 插入失败。", $e->getMessage());
+            return false;
         }
     }
     /**
@@ -145,7 +147,7 @@ class MangaSql extends Model
      * @param {*} $pageSize
      * @return {*}
      */
-    public static function manga_search($keyWord, $mediaLimit, $order, $page, $pageSize, $userId=0)
+    public static function manga_search($keyWord, $mediaLimit, $order, $page, $pageSize, $userId = 0)
     {
         $res = self::whereNotIn('mediaId', $mediaLimit)
             ->where('mangaName', 'like', "%{$keyWord}%")

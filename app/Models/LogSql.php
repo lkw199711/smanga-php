@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-15 01:06:29
+ * @LastEditTime: 2023-10-22 02:47:08
  * @FilePath: \lar-demo\app\Models\Log.php
  */
 
@@ -71,6 +71,20 @@ class LogSql extends Model
     {
         try {
             return self::create(['logContent' => $logContent]);
+        } catch (\Exception $e) {
+            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @description: 写入默认日志（流程 0级别
+     * @param {*} $logContent
+     * @return {*}
+     */
+    public static function add_warning($logContent)
+    {
+        try {
+            return self::create(['logType' => 'warning', 'logLevel' => 1, 'logContent' => $logContent]);
         } catch (\Exception $e) {
             return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
         }

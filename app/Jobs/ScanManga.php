@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\ErrorHandling;
 use App\Http\Controllers\UnCompressTools;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -40,6 +41,9 @@ class ScanManga implements ShouldQueue
     private $direction;
     private $removeFirst;
     private $mediaId;
+    // 扫描中漫画的id信息
+    private $mangaId;
+    private $chapterId;
 
     // private $removeFirst;
     // private $removeFirst;
@@ -68,6 +72,8 @@ class ScanManga implements ShouldQueue
 
         $this->scanCount = $scanCount;
         $this->scanIndex = $scanIndex;
+
+        $this->mangaId;
     }
 
     /**
@@ -97,10 +103,6 @@ class ScanManga implements ShouldQueue
             'scanIndex' => $this->scanIndex
         ]);
 
-        $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $this->mangaPath);
-        // 获取封面
-        $this->mangaCover = self::get_poster($this->mangaPath, $posterName);
-
         $mangaInsert = [
             'mediaId' => $this->mediaId,
             'pathId' => $this->pathId,
@@ -119,26 +121,30 @@ class ScanManga implements ShouldQueue
         }
 
         // 检查库中是否存在此漫画
-        $mangaInfo = ['code' => 0, 'request' => DB::table('manga')->where('mangaPath', $this->mangaPath)->where('mediaId', $this->mediaId)->first()];
+        $mangaInfo = DB::table('manga')->where('mangaPath', $this->mangaPath)->where('mediaId', $this->mediaId)->first();
 
         if ($this->mediaType == 1) {
+            /**
+             * 当漫画类型为单本漫画
+             */
 
-            if ($mangaInfo['request']) {
-                // 漫画已存在 且为单本 跳过此漫画
-                return false;
-            }
-            // 单本漫画
-            $mangaInsert['chaptercount'] = 1;
+            // 漫画已存在 且为单本 跳过此漫画
+            if ($mangaInfo) return false;
+
+            // 单本漫画的
+            $mangaInsert['chapterCount'] = 1;
+
             // 插入漫画
             $mangaInfo = MangaSql::add($mangaInsert);
 
-            if ($mangaInfo['code'] == 1) {
-                echo "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}";
-                return false;
-            }
+            // 插入漫画失败
+            if (!$mangaInfo) return false;   
+
+            // 缓存mangaId
+            $this->mangaId = $mangaInfo->mangaId;
 
             $chapterData = [
-                'mangaId' => $mangaInfo['request']->mangaId,
+                'mangaId' => $mangaInfo->mangaId,
                 'mediaId' => $this->mediaId,
                 'pathId' => $this->pathId,
                 'chapterName' => $this->mangaName,
@@ -150,37 +156,11 @@ class ScanManga implements ShouldQueue
 
             $chapterAddRes = ChapterSql::add($chapterData);
 
-            $chapterId = $chapterAddRes->chapterId;
+            // 缓存chapterId
+            $this->chapterId = $chapterId = $chapterAddRes->chapterId;
 
             // 通过部分解压获取封面图
-            if (!$this->mangaCover) {
-                // 封面存放路径
-                $posterPath = Utils::get_env('SMANGA_POSTER');
-                if (!$posterPath) $posterPath = '/data/poster';
-                // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
-                $copyPoster = "{$posterPath}/smanga_chapter_{$chapterId}.png";
-
-                // 用于判断是否成功提取了图片
-                $size = false;
-                if ($this->mangaType === 'zip') {
-                    $size = UnCompressTools::ext_zip($this->mangaPath, $copyPoster);
-                }
-
-                if ($this->mangaType === 'rar') {
-                    $size = UnCompressTools::ext_rar($this->mangaPath, $posterPath, "smanga_chapter_{$chapterId}.png");
-                }
-
-                if ($this->mangaType === '7z') {
-                    $size = UnCompressTools::ext_7z($this->mangaPath, $posterPath, "smanga_chapter_{$chapterId}.png");
-                }
-
-                // 提取图片成功 存入库
-                if ($size) {
-                    ChapterSql::chapter_update($chapterId, ['chapterCover' => $copyPoster]);
-                    MangaSql::manga_update($mangaInfo['request']->mangaId, ['mangaCover' => $copyPoster]);
-                    $this->mangaCover = $copyPoster;
-                }
-            }
+            self::get_poster($this->mangaPath, $this->mangaType);
 
             // 是否自动解压的配置项
             $autoCompress = Utils::config_read('scan', 'autoCompress');
@@ -194,33 +174,30 @@ class ScanManga implements ShouldQueue
                 }
             }
         } else {
-            // 普通结构
+            /**
+             * 当漫画类型为普通结构
+             */
+            
             $chapterList = self::get_chapter_list($this->mangaPath);
             $chapterListSql = [];
 
-            if (!$mangaInfo['request']) {
+            if (!$mangaInfo) {
                 // 漫画不存在则新增
-                $mangaInsert['chaptercount'] = count($chapterList);
+                $mangaInsert['chapterCount'] = count($chapterList);
                 // 插入漫画
                 $mangaInfo = MangaSql::add($mangaInsert);
             } else {
                 // 漫画原本存在,获取所有漫画章节进行增减判断
-                $mangaId = $mangaInfo['request']->mangaId;
+                $mangaId = $mangaInfo->mangaId;
                 $res = ChapterSql::get_nopage($mangaId, 'id');
                 $chapterListSql = $res['list']->data;
             }
 
-            // 获取漫画失败(数据库错误)
-            if ($mangaInfo['code'] == 1) {
-                echo "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}";
-                // 记录错误日志
-                LogSql::add([
-                    'logType' => 'error',
-                    'logLevel' => 3,
-                    'logContent' => "error: 漫画 \"{$this->mangaName}\" 插入失败。{$mangaInfo['eMsg']}"
-                ]);
-                return false;
-            }
+            // 插入漫画失败
+            if (!$mangaInfo) return false;
+
+            // 缓存mangaId
+            $this->mangaId = $mangaInfo->mangaId;
 
             // 实际目录扫描多于数据库章节 (说明新增了章节)
             if (count($chapterList) > count($chapterListSql)) {
@@ -250,7 +227,7 @@ class ScanManga implements ShouldQueue
                     // 没有章节 进行新增
                     if (!$hasChapter) {
                         $chapterData = [
-                            'mangaId' => $mangaInfo['request']->mangaId,
+                            'mangaId' => $mangaInfo->mangaId,
                             'mediaId' => $this->mediaId,
                             'pathId' => $this->pathId,
                             'chapterName' => $val->chapterName,
@@ -263,40 +240,10 @@ class ScanManga implements ShouldQueue
                         $chapterAddRes = ChapterSql::add($chapterData);
 
                         // 获取刚刚新增的章节id
-                        $chapterId = $chapterAddRes->chapterId;
+                        $this->chapterId = $chapterId = $chapterAddRes->chapterId;
 
                         // 通过部分解压获取封面图
-                        if (!$val->chapterCover) {
-                            // 封面存放路径
-                            $posterPath = Utils::get_env('SMANGA_POSTER');
-                            if (!$posterPath) $posterPath = '/data/poster';
-                            // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
-                            $copyPoster = "{$posterPath}/smanga_chapter_{$chapterId}.png";
-
-                            // 用于判断是否成功提取了图片
-                            $size = false;
-                            if ($val->chapterType === 'zip') {
-                                $size = UnCompressTools::ext_zip($val->chapterPath, $copyPoster);
-                            }
-
-                            if ($val->chapterType === 'rar') {
-                                $size = UnCompressTools::ext_rar($val->chapterPath, $posterPath, "smanga_chapter_{$chapterId}.png");
-                            }
-
-                            if ($val->chapterType === '7z') {
-                                $size = UnCompressTools::ext_7z($val->chapterPath, $posterPath, "smanga_chapter_{$chapterId}.png");
-                            }
-
-                            // 提取图片成功 存入库
-                            if ($size) {
-                                ChapterSql::chapter_update($chapterId, ['chapterCover' => $copyPoster]);
-
-                                if (!$this->mangaCover) {
-                                    MangaSql::manga_update($mangaInfo['request']->mangaId, ['mangaCover' => $copyPoster]);
-                                    $this->mangaCover = $copyPoster;
-                                }
-                            }
-                        }
+                        self::get_poster($val->chapterPath, $val->chapterType);
 
                         // 是否自动解压的配置项
                         $autoCompress = Utils::config_read('scan', 'autoCompress');
@@ -364,7 +311,7 @@ class ScanManga implements ShouldQueue
                 // 添加标签关联
                 MangaTagSql::add([
                     'tagId' => $sqlRes->tagId,
-                    'mangaId' => $mangaInfo['request']->mangaId,
+                    'mangaId' => $mangaInfo->mangaId,
                 ]);
             }
 
@@ -378,7 +325,7 @@ class ScanManga implements ShouldQueue
                     'characterName' => $val->name,
                     'description' => $val->description,
                     'characterPicture' => $characterPicture,
-                    'mangaId' => $mangaInfo['request']->mangaId,
+                    'mangaId' => $mangaInfo->mangaId,
                 ]);
             }
 
@@ -390,7 +337,7 @@ class ScanManga implements ShouldQueue
                 if (preg_match('/banner/i', $file)) {
                     MetaSql::add([
                         'metaType' => 'banner',
-                        'mangaId' => $mangaInfo['request']->mangaId,
+                        'mangaId' => $mangaInfo->mangaId,
                         'metaFile' => $mangaMetaPath . '/' . $file,
                     ]);
                 }
@@ -399,7 +346,7 @@ class ScanManga implements ShouldQueue
                 if (preg_match('/thumbnail/i', $file)) {
                     MetaSql::add([
                         'metaType' => 'thumbnail',
-                        'mangaId' => $mangaInfo['request']->mangaId,
+                        'mangaId' => $mangaInfo->mangaId,
                         'metaFile' => $mangaMetaPath . '/' . $file,
                     ]);
                 }
@@ -433,10 +380,9 @@ class ScanManga implements ShouldQueue
         foreach ($dir as $file) {
             $targetPath = $path . "/" . $file;
 
-            $posterName = $targetPath;
             // 是文件
             if (!is_dir($targetPath)) {
-                if (preg_match('/(.cbr|.cbz|.zip|.epub)/i', $file)) {
+                if (preg_match('/(.cbr|.cbz|.zip|.epub)$/i', $file)) {
                     $type = 'zip';
                 } elseif (preg_match('/.7z/i', $file)) {
                     $type = '7z';
@@ -447,11 +393,9 @@ class ScanManga implements ShouldQueue
                 } else {
                     continue;
                 }
-
-                $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $posterName);
             }
 
-            array_push($list, new ChapterItem($file, $targetPath, self::get_poster($targetPath, $posterName), $type));
+            array_push($list, new ChapterItem($file, $targetPath, '', $type));
         }
 
         return $list;
@@ -529,30 +473,58 @@ class ScanManga implements ShouldQueue
      * @param {*} $name
      * @return {*}
      */
-    private function get_poster($path, $name, $chapterId = 0)
+    private function get_poster($path, $type)
     {
-        $extensions = ['.png', '.PNG', '.jpg', '.JPG', 'webp', 'WEBP'];
+        $poster = '';
+        $name = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $path);
+
+        // 封面存放路径
+        $posterPath = Utils::get_env('SMANGA_POSTER');
+        if (!$posterPath) $posterPath = '/data/poster';
+        // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
+        $copyPoster = "{$posterPath}/smanga_chapter_{$this->chapterId}.png";
+
+        $extensions = ['.png', '.PNG', '.jpg', '.jpeg', '.JPG', '.webp', '.WEBP'];
         foreach ($extensions as $extension) {
             $filename = $name . $extension;
             if (is_file($filename)) {
-                return $filename;
+                $poster = $filename;
+                break;
             }
         }
 
-        $firstImg = self::get_first_image($path);
-        if ($firstImg) {
-            /*
-            // 封面存放路径
-            $posterPath = Utils::get_env('SMANGA_POSTER');
-            if (!$posterPath) $posterPath = '/data/poster';
-            // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
-            $copyPoster = "{$posterPath}/smanga_chapter_{$chapterId}.png";
-            // 复制到poster目录
-            copy($firstImg, $copyPoster);
-*/
-            return $firstImg;
+        if (!$poster) {
+            $poster = self::get_first_image($path);
+        }
+
+        if (!$poster) {
+            // 用于判断是否成功提取了图片
+            $success = false;
+            if ($type === 'zip') {
+                $success = UnCompressTools::ext_zip($path, $copyPoster);
+            }
+
+            if ($type === 'rar') {
+                $success = UnCompressTools::ext_rar($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
+            }
+
+            if ($type === '7z') {
+                $success = UnCompressTools::ext_7z($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
+            }
         } else {
-            return '';
+            copy($filename, $copyPoster);
+        }
+
+        // 提取图片成功 存入库
+        if ($success || $poster) {
+            ChapterSql::chapter_update($this->chapterId, ['chapterCover' => $copyPoster]);
+
+            if (!$this->mangaCover) {
+                MangaSql::manga_update($this->mangaId, ['mangaCover' => $copyPoster]);
+                $this->mangaCover = $copyPoster;
+            }
+        } else {
+            ErrorHandling::handle("漫画 {$this->mangaId} 获取封面失败,");
         }
     }
 
