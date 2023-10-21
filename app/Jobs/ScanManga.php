@@ -380,10 +380,10 @@ class ScanManga implements ShouldQueue
                 ]);
             }
 
-            $dir = dir($mangaMetaPath);
-            while (($file = $dir->read()) !== false) {
-                if ($file == '.' || $file == '..') continue;
+            $dir = scandir($mangaMetaPath);
+            $dir = array_diff($dir, ['.', '..']);
 
+            foreach ($dir as $file) {
                 // 插入banner图
                 if (preg_match('/banner/i', $file)) {
                     MetaSql::add([
@@ -424,12 +424,11 @@ class ScanManga implements ShouldQueue
     private function get_chapter_list($path)
     {
         $list = array();
-        $dir = dir($path);
+        $dir = scandir($path);
+        $dir = array_diff($dir, ['.', '..']);
         $type = 'image';
 
-        while (($file = $dir->read()) !== false) {
-            if ($file == '.' || $file == '..') continue;
-
+        foreach ($dir as $file) {
             $targetPath = $path . "/" . $file;
 
             $posterName = $targetPath;
@@ -453,8 +452,6 @@ class ScanManga implements ShouldQueue
             array_push($list, new ChapterItem($file, $targetPath, self::get_poster($targetPath, $posterName), $type));
         }
 
-        $dir->close();
-
         return $list;
     }
 
@@ -471,11 +468,10 @@ class ScanManga implements ShouldQueue
             return $list;
         }
 
-        $dir = dir($path);
+        $dir = scandir($path);
+        $dir = array_diff($dir, ['.', '..']);
 
-        while (($file = $dir->read()) !== false) {
-            if ($file == '.' || $file == '..') continue;
-
+        foreach ($dir as $file) {
             $route = $path . "/" . $file;
 
             // 添加图片
@@ -487,8 +483,6 @@ class ScanManga implements ShouldQueue
                 $list = array_merge($list, self::get_file_list($route));
             }
         }
-
-        $dir->close();
 
         sort($list, SORT_NATURAL | SORT_FLAG_CASE);
 
@@ -506,9 +500,10 @@ class ScanManga implements ShouldQueue
             return '';
         }
 
-        $dir = dir($path);
+        $dir = scandir($path);
+        $dir = array_diff($dir, ['.', '..']);
 
-        while (($file = $dir->read()) !== false) {
+        foreach ($dir as $file) {
             if ($file == '.' || $file == '..') continue;
 
             $route = $path . "/" . $file;
@@ -522,8 +517,6 @@ class ScanManga implements ShouldQueue
                 return self::get_first_image($route);
             }
         }
-
-        $dir->close();
 
         return '';
     }

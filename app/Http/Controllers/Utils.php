@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-10-12 23:32:56
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-20 01:58:32
+ * @LastEditTime: 2023-10-21 17:48:57
  * @FilePath: /smanga-php/app/Http/Controllers/Utils.php
  */
 
@@ -30,7 +30,7 @@ class Utils extends Controller
      * @description: 转化布尔值
      * @param {*} $val
      * @return {*}
-     */    
+     */
     public static function bool($val)
     {
         if (!$val) return false;
@@ -81,11 +81,11 @@ class Utils extends Controller
     public static function get_file_list($path)
     {
         $list = array();
-        $dir = dir($path);
+        $dir = scandir($path);
+        $dir = array_diff($dir, ['.', '..']);
+        // $dir = array_map(fn ($n) => $path . '/' . $n, $dir);
 
-        while (($file = $dir->read()) !== false) {
-            if ($file == '.' || $file == '..') continue;
-
+        foreach($dir as $file){
             $route = $path . "/" . $file;
 
             // 添加图片
@@ -97,8 +97,6 @@ class Utils extends Controller
                 $list = array_merge($list, self::get_file_list($route));
             }
         }
-
-        $dir->close();
 
         sort($list, SORT_NATURAL | SORT_FLAG_CASE);
 

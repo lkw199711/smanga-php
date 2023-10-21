@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-20 01:10:23
+ * @LastEditTime: 2023-10-21 17:28:11
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
@@ -182,13 +182,12 @@ class Scan implements ShouldQueue
      */
     private function get_manga_list($path)
     {
-        $list = array();
-        $dir = dir($path);
         $type = 'image';
+        $list = array();
+        $dir = scandir($path);
+        $dir = array_diff($dir, ['.', '..']);
 
-        while (($file = $dir->read()) !== false) {
-            if ($file == '.' || $file == '..') continue;
-
+        foreach ($dir as $file) {
             $targetPath = $path . "/" . $file;
             $posterName = $targetPath;
 
@@ -226,8 +225,6 @@ class Scan implements ShouldQueue
 
             array_push($list, new MangaItem($file, $targetPath, $type));
         }
-
-        $dir->close();
 
         return $list;
     }

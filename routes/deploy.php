@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-01 17:03:35
+ * @LastEditTime: 2023-10-21 17:54:23
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
@@ -48,6 +48,13 @@ Route::any('test/log', function () {
 });
 
 Route::any('test/scan', function () {
+    $path = '/mnt/single0/single0/18manga/00日漫/出包王女';
+    $scanDir = scandir($path);
+    $scanDir = array_diff($scanDir, ['.', '..']);
+    $scanDir = array_map(fn ($n) => $path . '/' . $n, $scanDir);
+    dump($scanDir);
+
+    return;
     // 新增一条日志
     return ScanSql::add([
         'scanStatus' => 'start',

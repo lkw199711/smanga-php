@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-18 01:56:35
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-20 00:10:26
+ * @LastEditTime: 2023-10-21 17:49:03
  * @FilePath: /php/laravel/app/Jobs/Compress.php
  */
 
@@ -259,11 +259,11 @@ class Compress implements ShouldQueue
     private static function get_file_list($path)
     {
         $list = array();
-        $dir = dir($path);
+        $dir = scandir($path);
+        $dir = array_diff($dir, ['.', '..']);
+        // $dir = array_map(fn ($n) => $path . '/' . $n, $dir);
 
-        while (($file = $dir->read()) !== false) {
-            if ($file == '.' || $file == '..') continue;
-
+        foreach ($dir as $file) {
             $route = $path . "/" . $file;
 
             // 添加图片
@@ -275,8 +275,6 @@ class Compress implements ShouldQueue
                 $list = array_merge($list, self::get_file_list($route));
             }
         }
-
-        $dir->close();
 
         sort($list, SORT_NATURAL | SORT_FLAG_CASE);
 
