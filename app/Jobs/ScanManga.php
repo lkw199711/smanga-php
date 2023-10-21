@@ -178,6 +178,7 @@ class ScanManga implements ShouldQueue
                 if ($size) {
                     ChapterSql::chapter_update($chapterId, ['chapterCover' => $copyPoster]);
                     MangaSql::manga_update($mangaInfo['request']->mangaId, ['mangaCover' => $copyPoster]);
+                    $this->mangaCover = $copyPoster;
                 }
             }
 
@@ -292,6 +293,7 @@ class ScanManga implements ShouldQueue
                                 
                                 if(!$this->mangaCover){
                                     MangaSql::manga_update($mangaInfo['request']->mangaId, ['mangaCover' => $copyPoster]);
+                                    $this->mangaCover = $copyPoster;
                                 }
                             }
                         }

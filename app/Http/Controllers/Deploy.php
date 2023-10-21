@@ -854,6 +854,16 @@ class Deploy extends Controller
             ]);
         }
 
+        // 352
+        if (array_search('3.5.2', $vers) === false) {
+            // 新增3.5.2版本记录
+            VersionSql::add([
+                'version' => '3.5.2',
+                'versionDescribe' => '目录扫描方法替换.',
+                'createTime' => '2023-10-21 18:45:52'
+            ]);
+        }
+
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
