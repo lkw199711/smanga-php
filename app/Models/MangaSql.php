@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 03:03:18
+ * @LastEditTime: 2023-10-22 15:55:07
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -49,13 +49,16 @@ class MangaSql extends Model
      * @param {*} $mediaLimit
      * @return {*}
      */
-    public static function get($page, $pageSize, $mediaId, $mediaLimit, $userId)
+    public static function get($page, $pageSize, $mediaId, $mediaLimit, $userId, $order)
     {
-        $res = self::where('mediaId', $mediaId)
-            ->whereNotIn('mediaId', $mediaLimit)
-            ->paginate($pageSize, ['*'], 'page', $page);
+        $orderText = self::get_order_text($order);
+
+        $sql = self::where('mediaId', $mediaId)->whereNotIn('mediaId', $mediaLimit)->orderByRaw($orderText);
+
+        $res = $sql->paginate($pageSize, ['*'], 'page', $page);
 
         $count = $res->total();
+
         $list = $res->getCollection()->transform(function ($row) use ($userId) {
             $tagArr = MangaTagSql::get_nopage($userId, $row->mangaId);
 
@@ -149,9 +152,10 @@ class MangaSql extends Model
      */
     public static function manga_search($keyWord, $mediaLimit, $order, $page, $pageSize, $userId = 0)
     {
-        $res = self::whereNotIn('mediaId', $mediaLimit)
-            ->where('mangaName', 'like', "%{$keyWord}%")
-            ->paginate($pageSize, ['*'], 'page', $page);
+        $orderText = self::get_order_text($order);
+        $sql = self::whereNotIn('mediaId', $mediaLimit)->where('mangaName', 'like', "%{$keyWord}%")->orderByRaw($orderText);
+
+        $res = $sql->paginate($pageSize, ['*'], 'page', $page);
 
         $count = $res->total();
         $list = $res->getCollection()->transform(function ($row) use ($userId) {
@@ -262,12 +266,39 @@ class MangaSql extends Model
      * @description: 通过标签获取漫画
      * @return {*}
      */
-    public static function get_by_tags($tagIdArr, $page, $pageSize)
+    public static function get_by_tags($tagIdArr, $page, $pageSize, $order)
     {
-        $res = self::join('mangaTag', 'mangaTag.mangaId', 'manga.mangaId')
-            ->whereIn('tagId', $tagIdArr)
-            ->paginate($pageSize, ['*'], 'page', $page);
+        $orderText = self::get_order_text($order);
+
+        $sql = self::join('mangaTag', 'mangaTag.mangaId', 'manga.mangaId')
+            ->whereIn('tagId', $tagIdArr)->orderByRaw($orderText);
+
+        $res = $sql->paginate($pageSize, ['*'], 'page', $page);
 
         return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+    }
+    /**
+     * @description: 转换排序参数
+     * @param {*} $order
+     * @return {*}
+     */
+    private static function get_order_text($order)
+    {
+        if (!$order) $order = 'name';
+
+        $orderText = $order;
+        if (array_search($order, ['id', 'idDesc']) !== false) {
+            $orderText = 'manga.mangaId';
+        }
+        if (array_search($order, ['name', 'nameDesc']) !== false) {
+            $orderText = 'manga.mangaName';
+        }
+        if (array_search($order, ['time', 'timeDesc']) !== false) {
+            $orderText = 'manga.createTime';
+        }
+
+        $desc = preg_match('/Desc$/', $order) ? 'DESC' : 'ASC';
+
+        return $orderText . ' ' . $desc;
     }
 }

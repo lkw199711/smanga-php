@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-21 21:23:17
+ * @LastEditTime: 2023-10-22 15:57:51
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -50,11 +50,9 @@ class ChapterSql extends Model
     {
         $orderText = self::get_order_text($order);
 
-        $sql = self::where('mangaId', $mangaId)
-            ->orderByRaw($orderText);
+        $sql = self::where('mangaId', $mangaId)->orderByRaw($orderText);
 
-        $res = $sql
-            ->paginate($pageSize, ['*'], 'page', $page);
+        $res = $sql->paginate($pageSize, ['*'], 'page', $page);
 
         $toSql = $sql->toSql();
 
@@ -138,9 +136,14 @@ class ChapterSql extends Model
 
         // $sql = $base->toSql();
 
-        $res = $base->paginate($pageSize, ['*'], 'page', $page);
+        $paginate = $base->paginate($pageSize, ['*'], 'page', $page);
 
-        return ['code' => 0, 'request' => '获取成功', 'list' => $res];
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return ['code' => 0, 'request' => '获取成功', 'list' => $list, 'count' => $count];
     }
     /**
      * @description: 修改章节信息

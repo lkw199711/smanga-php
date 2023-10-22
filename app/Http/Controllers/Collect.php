@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 19:03:12
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-23 13:46:33
+ * @LastEditTime: 2023-10-22 15:41:36
  * @FilePath: \lar-demo\app\Http\Controllers\Collect.php
  */
 
@@ -29,12 +29,13 @@ class Collect extends Controller
         $page = $request->post('page');
         $pageSize = $request->post('pageSize');
         $collectType = $request->post('collectType');
+        $order = $request->post('order');
 
         // 模型处理数据
         if ($collectType === 'manga') {
-            $sqlList =  CollectSql::get_manga($userId, $page, $pageSize);
+            $sqlList =  CollectSql::get_manga($userId, $page, $pageSize, $order);
         } else {
-            $sqlList =  CollectSql::get_chapter($userId, $page, $pageSize);
+            $sqlList =  CollectSql::get_chapter($userId, $page, $pageSize, $order);
         }
 
         $res = new ListResponse($sqlList->list, $sqlList->count, '收藏列表获取成功');

@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-23 12:43:14
+ * @LastEditTime: 2023-10-22 15:37:18
  * @FilePath: /php/laravel/app/Models/CollectSql.php
  */
 
@@ -40,12 +40,15 @@ class CollectSql extends Model
      * @param {*} $page
      * @return {*}
      */
-    public static function get_manga($userId, $page = 1, $pageSize = 10)
+    public static function get_manga($userId, $page = 1, $pageSize = 10, $order)
     {
+        $orderText = self::get_manga_order_text($order);
+        
         $sql = self::join('manga', 'collect.mangaId', 'manga.mangaId')
             ->where('userId', '=', $userId)
-            ->where('collectType', 'manga');
-        
+            ->where('collectType', 'manga')
+            ->orderByRaw($orderText);
+
         // 分页原型
         $paginate = $sql->paginate($pageSize, ['*'], 'page', $page);
 
@@ -63,12 +66,15 @@ class CollectSql extends Model
      * @param {*} $pageSize
      * @return {*}
      */
-    public static function get_chapter($userId, $page = 1, $pageSize = 10)
+    public static function get_chapter($userId, $page = 1, $pageSize = 10, $order)
     {
+        $orderText = self::get_chapter_order_text($order);
+
         $sql = self::join('manga', 'collect.mangaId', 'manga.mangaId')
             ->join('chapter', 'collect.chapterId', 'chapter.chapterId')
             ->where('userId', $userId)
-            ->where('collectType', 'chapter');
+            ->where('collectType', 'chapter')
+            ->orderByRaw($orderText);
 
         $paginate = $sql->paginate($pageSize, ['*'], 'page', $page);
 
@@ -87,7 +93,7 @@ class CollectSql extends Model
     public static function all($page = 1, $pageSize = 10)
     {
         $paginate = self::paginate($pageSize, ['*'], 'page', $page);
-        
+
         $count = $paginate->total();
         $list = $paginate->getCollection()->transform(function ($row) {
             return $row;
@@ -200,5 +206,54 @@ class CollectSql extends Model
         } catch (\Exception $e) {
             ErrorHandling::handle("移除章节收藏错误,chapterId=>$chapterId", $e->getMessage());
         }
+    }
+
+    /**
+     * @description: 转换排序参数
+     * @param {*} $order
+     * @return {*}
+     */
+    private static function get_manga_order_text($order)
+    {
+        if (!$order) $order = 'name';
+
+        $orderText = $order;
+        if (array_search($order, ['id', 'idDesc']) !== false) {
+            $orderText = 'manga.mangaId';
+        }
+        if (array_search($order, ['name', 'nameDesc']) !== false) {
+            $orderText = 'manga.mangaName';
+        }
+        if (array_search($order, ['time', 'timeDesc']) !== false) {
+            $orderText = 'collect.createTime';
+        }
+
+        $desc = preg_match('/Desc$/', $order) ? 'DESC' : 'ASC';
+
+        return $orderText . ' ' . $desc;
+    }
+    /**
+     * @description: 转换排序参数
+     * @param {*} $order
+     * @return {*}
+     */
+    private static function get_chapter_order_text($order)
+    {
+        if (!$order) $order = 'name';
+
+        $orderText = $order;
+        if (array_search($order, ['id', 'idDesc']) !== false) {
+            $orderText = 'chapter.chapterId';
+        }
+        if (array_search($order, ['name', 'nameDesc']) !== false) {
+            $orderText = 'CAST(REGEXP_SUBSTR(chapter.chapterName, \'[0-9]+\') AS DECIMAL)';
+        }
+        if (array_search($order, ['time', 'timeDesc']) !== false) {
+            $orderText = 'collect.createTime';
+        }
+
+        $desc = preg_match('/Desc$/', $order) ? 'DESC' : 'ASC';
+
+        return $orderText . ' ' . $desc;
     }
 }
