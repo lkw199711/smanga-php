@@ -876,8 +876,8 @@ class Deploy extends Controller
         if (array_search('3.5.4', $vers) === false) {
             VersionSql::add([
                 'version' => '3.5.4',
-                'versionDescribe' => '优化封面获取.',
-                'createTime' => '2023-10-21 22:06:50'
+                'versionDescribe' => '新增漫画排序逻辑.',
+                'createTime' => '2023-10-22 16:00:38'
             ]);
         }
 
