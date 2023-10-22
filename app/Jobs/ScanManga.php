@@ -138,7 +138,7 @@ class ScanManga implements ShouldQueue
             $mangaInfo = MangaSql::add($mangaInsert);
 
             // 插入漫画失败
-            if (!$mangaInfo) return false;   
+            if (!$mangaInfo) return false;
 
             // 缓存mangaId
             $this->mangaId = $mangaInfo->mangaId;
@@ -177,7 +177,7 @@ class ScanManga implements ShouldQueue
             /**
              * 当漫画类型为普通结构
              */
-            
+
             $chapterList = self::get_chapter_list($this->mangaPath);
             $chapterListSql = [];
 
@@ -512,7 +512,7 @@ class ScanManga implements ShouldQueue
                 UnCompressTools::ext_7z($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
             }
         } else {
-            copy($poster, $copyPoster);  
+            copy($poster, $copyPoster);
         }
 
         // 提取图片成功 存入库
@@ -520,13 +520,34 @@ class ScanManga implements ShouldQueue
             ChapterSql::chapter_update($this->chapterId, ['chapterCover' => $copyPoster]);
 
             if (!$this->mangaCover) {
-                MangaSql::manga_update($this->mangaId, ['mangaCover' => $copyPoster]);
-                $this->mangaCover = $copyPoster;
+                $sidePic = self::side_pic($this->mangaPath);
+                $this->mangaCover = $sidePic ? $sidePic : $copyPoster;
+                MangaSql::manga_update($this->mangaId, ['mangaCover' => $this->mangaCover]);
             }
         } else {
             ErrorHandling::handle("漫画 {$this->mangaId} 获取封面失败");
             return false;
         }
+    }
+
+    public function side_pic($path)
+    {
+        $name = preg_replace('/(.cbr|.cbz|.zip|.7z|.epub|.rar|.pdf)$/i', '', $path);
+        $extensions = ['.png', '.PNG', '.jpg', '.jpeg', '.JPG', '.webp', '.WEBP'];
+        foreach ($extensions as $extension) {
+            $filename = $name . $extension;
+            if (is_file($filename)) {
+                return $filename;
+            }
+        }
+
+        $mangaMetaPath = self::get_meta_path($this->mangaPath);
+        if ($mangaMetaPath) {
+            if ($mangaMetaPath . '/cover.jpg') return $mangaMetaPath . '/cover.jpg';
+            if ($mangaMetaPath . '/cover.png') return $mangaMetaPath . '/cover.png';
+        }
+
+        return '';
     }
 
     /**
