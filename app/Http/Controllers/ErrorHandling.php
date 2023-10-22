@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-09-23 11:55:31
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 02:32:30
+ * @LastEditTime: 2023-10-23 00:35:22
  * @FilePath: /smanga-php/app/Http/Controllers/ErrorHandling.php
  */
 
@@ -24,6 +24,8 @@ class ErrorHandling extends Controller
             'logContent' => $errorLog,
         ]);
 
-        return new JsonResponse(new ErrorResponse($errorLog, $errorCodeLog));
+        // return new JsonResponse(new ErrorResponse($errorLog, $errorCodeLog));
+        // 考虑此控制器一直在程序内使用 返回false即可
+        return false;
     }
 }

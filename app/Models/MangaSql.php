@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 16:19:55
+ * @LastEditTime: 2023-10-23 00:36:20
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Http\Controllers\ErrorHandling;
 use App\Http\Controllers\History;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -73,7 +74,7 @@ class MangaSql extends Model
             return $row;
         });
 
-        return ['code' => 0, 'text' => '获取成功', 'list' => $list, 'count' => $count];
+        return new SqlList($list, $count);
     }
 
     /**
@@ -89,8 +90,6 @@ class MangaSql extends Model
         $tags = MangaTagSql::get_nopage($userId, $mangaId)['list'];
 
         return [
-            'code' => 0,
-            'text' => '获取成功',
             'info' => $info,
             'tags' => $tags,
             'meta' => $meta,
@@ -107,14 +106,14 @@ class MangaSql extends Model
      */
     public static function get_nomedia($page, $pageSize, $mediaLimit)
     {
-        $res = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
+        $paginate = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
 
-        $count = $res->total();
-        $list = $res->getCollection()->transform(function ($row) {
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
             return $row;
         });
 
-        return ['code' => 0, 'text' => '获取成功', 'list' => $list, 'count' => $count];
+        return new SqlList($list, $count);
     }
     /**
      * @description: 无限制获取漫画列表
@@ -124,8 +123,12 @@ class MangaSql extends Model
      */
     public static function get_nolimit($page, $pageSize, $mediaId)
     {
-        $res = self::where('mediaId', $mediaId)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+        $paginate = self::where('mediaId', $mediaId)->paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+        return new SqlList($list, $count);
     }
     /**
      * @description: 新增漫画
@@ -155,10 +158,10 @@ class MangaSql extends Model
         $orderText = self::get_order_text($order);
         $sql = self::whereNotIn('mediaId', $mediaLimit)->where('mangaName', 'like', "%{$keyWord}%")->orderByRaw($orderText);
 
-        $res = $sql->paginate($pageSize, ['*'], 'page', $page);
+        $paginate = $sql->paginate($pageSize, ['*'], 'page', $page);
 
-        $count = $res->total();
-        $list = $res->getCollection()->transform(function ($row) use ($userId) {
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) use ($userId) {
             $tagArr = MangaTagSql::get_nopage($userId, $row->mangaId);
 
             $characterRes = CharacterSql::get($row->mangaId);
@@ -172,7 +175,7 @@ class MangaSql extends Model
             return $row;
         });
 
-        return ['code' => 0, 'text' => '获取成功', 'list' => $list, 'count' => $count];
+        return new SqlList($list, $count);
     }
     /**
      * @description: 修改漫画信息
@@ -183,9 +186,9 @@ class MangaSql extends Model
     public static function manga_update($mangaId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('mangaId', $mangaId)->update($data)];
+            return self::where('mangaId', $mangaId)->update($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("漫画 '{$mangaId}' 修改失败。", $e->getMessage());
         }
     }
     /**
@@ -196,7 +199,7 @@ class MangaSql extends Model
     public static function manga_delete($mangaId)
     {
         try {
-            self::where('mangaId', $mangaId)->delete();
+
 
             // 删除相关章节
             ChapterSql::chapter_delete_by_manga($mangaId, false);
@@ -225,9 +228,9 @@ class MangaSql extends Model
             // 删除压缩转换记录
             CompressSql::compress_delete_by_manga($mangaId);
 
-            return ['code' => 0, 'message' => '删除成功'];
+            return self::where('mangaId', $mangaId)->delete();;
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("漫画 '{$mangaId}' 删除失败。", $e->getMessage());
         }
     }
     /**
@@ -243,7 +246,7 @@ class MangaSql extends Model
                 self::manga_delete($val->mangaId);
             }
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("路径 '{$pathId}' 删除失败。", $e->getMessage());
         }
     }
     /**
@@ -259,7 +262,7 @@ class MangaSql extends Model
                 self::manga_delete($val->mangaId);
             }
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("媒体库 '{$mediaId}' 删除失败。", $e->getMessage());
         }
     }
     /**
@@ -270,12 +273,17 @@ class MangaSql extends Model
     {
         $orderText = self::get_order_text($order);
 
-        $sql = self::join('mangaTag', 'mangaTag.mangaId', 'manga.mangaId')
+        $model = self::join('mangaTag', 'mangaTag.mangaId', 'manga.mangaId')
             ->whereIn('tagId', $tagIdArr)->orderByRaw($orderText);
 
-        $res = $sql->paginate($pageSize, ['*'], 'page', $page);
+        $paginate = $model->paginate($pageSize, ['*'], 'page', $page);
 
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
     /**
      * @description: 转换排序参数

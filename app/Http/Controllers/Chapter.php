@@ -3,16 +3,20 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-24 23:19:04
+ * @LastEditTime: 2023-10-23 00:25:29
  * @FilePath: /php/laravel/app/Http/Controllers/Chapter.php
  */
 
 namespace App\Http\Controllers;
 
+use App\Http\PublicClass\ErrorResponse;
+use App\Http\PublicClass\InterfacesResponse;
+use App\Http\PublicClass\ListResponse;
 use App\Jobs\Compress;
 use App\Models\ChapterSql;
 use App\Models\CompressSql;
 use App\Models\UserSql;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class Chapter extends Controller
@@ -44,25 +48,36 @@ class Chapter extends Controller
 
         if ($mangaId && $page) {
             // 正常获取漫画章节列表
-            return ChapterSql::get($mangaId, $page, $pageSize, $order);
+            $sqlList = ChapterSql::get($mangaId, $page, $pageSize, $order);
         } elseif ($page) {
             // 在章节管理中获取章节列表
-            return ChapterSql::get_nomanga($mediaLimit, $page, $pageSize, $order);
+            $sqlList = ChapterSql::get_nomanga($mediaLimit, $page, $pageSize, $order);
         } elseif ($mangaId) {
             // 获取左侧章节菜单
-            return ChapterSql::get_nopage($mangaId, $order);
+            $sqlList = ChapterSql::get_nopage($mangaId, $order);
         }
+
+        $res = new ListResponse($sqlList->list, $sqlList->count, '章节列表获取成功');
+        return new JsonResponse($res);
     }
-    
+
     /**
      * @description: 获取第一个章节
      * @param {Request} $request
      * @return {*}
      */
-    public function get_first(Request $request){
+    public function get_first(Request $request)
+    {
         $mangaId = $request->post('mangaId');
+        $mangaInfo = ChapterSql::get_first($mangaId);
 
-        return ChapterSql::get_first($mangaId);
+        if ($mangaInfo) {
+            $res = new InterfacesResponse($mangaInfo, '', 'get mangaInfo success.');
+        } else {
+            $res = new ErrorResponse('获取漫画章节错误');
+        }
+
+        return new JsonResponse($res);
     }
     /**
      * @description: 修改漫画信息
@@ -78,7 +93,15 @@ class Chapter extends Controller
 
         $data = ['chapterName' => $chapterName, 'chapterPath' => $chapterPath, 'chapterCover' => $chapterCover];
 
-        return ChapterSql::chapter_update($chapterId, $data);
+        $res = ChapterSql::chapter_update($chapterId, $data);
+
+        if ($res) {
+            $res = new InterfacesResponse($res, '章节修改成功');
+        } else {
+            $res = new ErrorResponse('章节修改错误');
+        }
+
+        return new JsonResponse($res);
     }
     /**
      * @description: 移除漫画信息
@@ -89,13 +112,21 @@ class Chapter extends Controller
     {
         $chapterId = $request->post('chapterId');
 
-        return ChapterSql::chapter_delete($chapterId);
+        $res = ChapterSql::chapter_delete($chapterId);
+
+        if ($res) {
+            $res = new InterfacesResponse($res, '章节删除成功');
+        } else {
+            $res = new ErrorResponse('章节删除错误');
+        }
+
+        return new JsonResponse($res);
     }
     public function image_list(Request $request)
     {
         $userId = $request->post('userId');
         $chapterId = $request->post('chapterId');
-        
+
         $chapterIndo = ChapterSql::chapter_info($chapterId);
         $chapterPath = $chapterIndo->chapterPath;
         $chapterType = $chapterIndo->chapterType;
@@ -107,9 +138,9 @@ class Chapter extends Controller
             if ($compressInfo) {
                 if (array_search($compressInfo->compressStatus, ['compressing', 'compressed']) !== false) {
                     $list = Utils::get_file_list($compressInfo->compressPath);
-                    return ['code' => 0, 'list' => $list, 'status' => $compressInfo->compressStatus];
+                    $res = new ListResponse($list, count($list), $compressInfo->compressStatus);
                 } else {
-                    return ['code' => 0, 'list' => [], 'status' => $compressInfo->compressStatus];
+                    $res = new ListResponse([], 0, $compressInfo->compressStatus);
                 }
             } else {
                 // 调试模式下同步运行
@@ -119,12 +150,13 @@ class Chapter extends Controller
                 } else {
                     Compress::dispatch($userId, $chapterId)->onQueue('compress');
                 }
-
-                return ['code' => 0, 'message' => '正在进行压缩转换', 'status' => 'uncompressed'];
+                $res = new InterfacesResponse('', '正在进行压缩转换', 'uncompressed');
             }
         } else {
             $list = Utils::get_file_list($chapterPath);
-            return ['code' => 0, 'list' => $list, 'status' => 'success'];
+            $res = new ListResponse($list, count($list), 'success.');
         }
+
+        return new JsonResponse($res);
     }
 }

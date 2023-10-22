@@ -3,12 +3,14 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 15:57:51
+ * @LastEditTime: 2023-10-22 23:24:48
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -52,11 +54,16 @@ class ChapterSql extends Model
 
         $sql = self::where('mangaId', $mangaId)->orderByRaw($orderText);
 
-        $res = $sql->paginate($pageSize, ['*'], 'page', $page);
+        $paginate = $sql->paginate($pageSize, ['*'], 'page', $page);
 
         $toSql = $sql->toSql();
 
-        return ['code' => 0, 'request' => '获取成功', 'list' => $res];
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
 
     /**
@@ -69,14 +76,14 @@ class ChapterSql extends Model
     {
         $orderText = self::get_order_text($order);
 
-        $res = self::where('mangaId', $mangaId)
-            ->orderByRaw($orderText)
-            ->get();
+        $sql = self::where('mangaId', $mangaId)
+            ->orderByRaw($orderText);
 
-        $toSql = self::where('mangaId', $mangaId)
-            ->orderByRaw($orderText)
-            ->toSql();
-        return ['code' => 0, 'request' => '获取成功', 'list' => new RequestList($res, count($res)), 'toSql' => $toSql];
+        $toSql = $sql->toSql();
+
+        $list = $sql->get();
+
+        return new SqlList($list, count($list));
     }
 
     /**
@@ -88,8 +95,14 @@ class ChapterSql extends Model
      */
     public static function get_nomanga($mediaLimit, $page = 1, $pageSize = 10)
     {
-        $res = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'request' => '获取成功', 'list' => $res];
+        $paginate = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
+
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
 
     /**
@@ -100,9 +113,7 @@ class ChapterSql extends Model
     public static function get_first($mangaId)
     {
         $orderText = self::get_order_text('name');
-        $res = self::where('mangaId', $mangaId)->orderByRaw($orderText)->first();
-
-        return ['code' => 0, 'request' => '获取成功', 'info' => $res];
+        return self::where('mangaId', $mangaId)->orderByRaw($orderText)->first();
     }
     /**
      * @description: 新增章节
@@ -114,7 +125,7 @@ class ChapterSql extends Model
         try {
             return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("章节 {$data['chapterName']} 新增失败", $e->getMessage());
         }
     }
     /**
@@ -143,7 +154,7 @@ class ChapterSql extends Model
             return $row;
         });
 
-        return ['code' => 0, 'request' => '获取成功', 'list' => $list, 'count' => $count];
+        return new SqlList($list, $count);
     }
     /**
      * @description: 修改章节信息
@@ -154,9 +165,9 @@ class ChapterSql extends Model
     public static function chapter_update($chapterId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('chapterId', $chapterId)->update($data)];
+            return self::where('chapterId', $chapterId)->update($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("章节 {$chapterId} 修改错误", $e->getMessage());
         }
     }
     /**
@@ -192,10 +203,9 @@ class ChapterSql extends Model
             //     unlink($chapterInfo->chapterCover);
             //     // shell_exec("rm -rf \"{$chapterInfo->chapterCover}\"");
             // }
-
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+            return self::where('chapterId', $chapterId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("章节 {$chapterId} 删除错误", $e->getMessage());
         }
     }
     /**
@@ -209,7 +219,7 @@ class ChapterSql extends Model
             CompressSql::compress_delete_by_path($pathId);
             self::where('pathId', $pathId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("路径 {$pathId} 删除错误", $e->getMessage());
         }
     }
     /**
@@ -225,7 +235,7 @@ class ChapterSql extends Model
                 self::chapter_delete($val->chapterId, false);
             }
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("漫画 {$mangaId} 删除错误", $e->getMessage());
         }
     }
     /**
@@ -239,7 +249,7 @@ class ChapterSql extends Model
             CompressSql::compress_delete_by_media($mediaId);
             self::where('mediaId', $mediaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("媒体库 {$mediaId} 删除错误", $e->getMessage());
         }
     }
     /**
