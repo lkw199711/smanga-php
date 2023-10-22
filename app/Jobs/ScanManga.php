@@ -258,6 +258,8 @@ class ScanManga implements ShouldQueue
                         }
                     }
                 }
+
+                MangaSql::manga_touch($this->mangaId);
             }
 
             // 实际目录扫描少于数据库章节 (说明删除了章节)
@@ -498,25 +500,23 @@ class ScanManga implements ShouldQueue
         }
 
         if (!$poster) {
-            // 用于判断是否成功提取了图片
-            $success = false;
             if ($type === 'zip') {
-                $success = UnCompressTools::ext_zip($path, $copyPoster);
+                UnCompressTools::ext_zip($path, $copyPoster);
             }
 
             if ($type === 'rar') {
-                $success = UnCompressTools::ext_rar($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
+                UnCompressTools::ext_rar($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
             }
 
             if ($type === '7z') {
-                $success = UnCompressTools::ext_7z($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
+                UnCompressTools::ext_7z($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
             }
         } else {
-            copy($filename, $copyPoster);
+            copy($poster, $copyPoster);  
         }
 
         // 提取图片成功 存入库
-        if ($success || $poster) {
+        if (is_file($copyPoster)) {
             ChapterSql::chapter_update($this->chapterId, ['chapterCover' => $copyPoster]);
 
             if (!$this->mangaCover) {
@@ -524,7 +524,8 @@ class ScanManga implements ShouldQueue
                 $this->mangaCover = $copyPoster;
             }
         } else {
-            ErrorHandling::handle("漫画 {$this->mangaId} 获取封面失败,");
+            ErrorHandling::handle("漫画 {$this->mangaId} 获取封面失败");
+            return false;
         }
     }
 

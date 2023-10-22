@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 15:55:07
+ * @LastEditTime: 2023-10-22 16:19:55
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -300,5 +300,15 @@ class MangaSql extends Model
         $desc = preg_match('/Desc$/', $order) ? 'DESC' : 'ASC';
 
         return $orderText . ' ' . $desc;
+    }
+
+    /**
+     * @description: 更新update时间戳
+     * @param {*} $mangaId
+     * @return {*}
+     */
+    public static function manga_touch($mangaId)
+    {
+        self::find($mangaId)->touch();
     }
 }
