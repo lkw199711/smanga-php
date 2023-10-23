@@ -2,13 +2,16 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 01:31:30
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-23 19:25:50
  * @FilePath: /php/laravel/app/Models/PathSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\Controllers\JobDispatch;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,7 +49,7 @@ class PathSql extends Model
     public static function get($mediaId)
     {
         $list = self::where('mediaId', $mediaId)->get();
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        return new SqlList($list,count($list));
     }
     /**
      * @description: 获取所有的路径
@@ -57,8 +60,13 @@ class PathSql extends Model
      */
     public static function get_nomedia($mediaLimit, $page = 1, $pageSize = 10)
     {
-        $list = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        $paginate = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
+
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+        return new SqlList($list, $count);
     }
     /**
      * @description: 新增路径
@@ -68,9 +76,9 @@ class PathSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '新增成功', 'info' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("路径 '{$data['path']}' 插入失败。", $e->getMessage());
         }
     }
     /**
@@ -81,10 +89,9 @@ class PathSql extends Model
     public static function path_delete($pathId)
     {
         try {
-            MangaSql::manga_delete_by_path($pathId);
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($pathId)];
+            return self::destroy($pathId);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("路径 '{$pathId}' 插入失败。", $e->getMessage());
         }
     }
 
@@ -97,9 +104,9 @@ class PathSql extends Model
     public static function path_update($pathId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('pathId', $pathId)->update($data)];
+            return self::where('pathId', $pathId)->update($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("路径 '{$pathId}' 更新失败。", $e->getMessage());
         }
     }
 
@@ -112,9 +119,9 @@ class PathSql extends Model
     public static function path_update_scan_time($pathId, $lastScanTime)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('pathId', $pathId)->update(['lastScanTime' => $lastScanTime])];
+            return self::where('pathId', $pathId)->update(['lastScanTime' => $lastScanTime]);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle("路径 '{$pathId}' 更新扫描时间失败。", $e->getMessage());
         }
     }
     /**

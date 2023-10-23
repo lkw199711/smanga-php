@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 02:49:30
+ * @LastEditTime: 2023-10-24 01:11:20
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 

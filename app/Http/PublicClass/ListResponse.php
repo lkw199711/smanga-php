@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-08-26 03:45:57
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-23 12:55:18
+ * @LastEditTime: 2023-10-23 23:28:37
  * @FilePath: /smanga-php/app/Http/PublicClass/ListResponse.php
  */
 
@@ -17,9 +17,9 @@ use App\Http\PublicClass\InterfacesResponse;
  */
 class ListResponse extends InterfacesResponse
 {
-    public $list;
-    public int $count;
-    public string $state;
+    public $list = [];
+    public int $count = 0;
+    public string $state = '';
 
     public function __construct($list, $count, $state = '列表获取成功')
     {

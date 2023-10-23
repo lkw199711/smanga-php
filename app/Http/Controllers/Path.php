@@ -2,18 +2,22 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 01:25:33
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-24 00:20:47
  * @FilePath: /php/laravel/app/Http/Controllers/Path.php
  */
 
 namespace App\Http\Controllers;
 
+use App\Http\PublicClass\ErrorResponse;
+use App\Http\PublicClass\InterfacesResponse;
+use App\Http\PublicClass\ListResponse;
 use App\Jobs\Scan;
 use App\Models\UserSql;
 use App\Models\PathSql;
 use App\Models\MangaSql;
 use App\Models\ChapterSql;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class Path extends Controller
@@ -34,11 +38,15 @@ class Path extends Controller
 
         if ($mediaId) {
             // 通过媒体库获取漫画
-            return PathSql::get($mediaId, $page, $pageSize);
+            $sqlList = PathSql::get($mediaId, $page, $pageSize);
         } else {
             // 获取全部漫画
-            return PathSql::get_nomedia($mediaLimit, $page, $pageSize);
+            $sqlList = PathSql::get_nomedia($mediaLimit, $page, $pageSize);
         }
+
+        $res = new ListResponse($sqlList->list, $sqlList->count, '获取路径列表成功');
+
+        return new JsonResponse($res);
     }
 
     /**
@@ -55,33 +63,31 @@ class Path extends Controller
         $exclude = $request->post('exclude');
 
         if (!is_dir($path)) {
-            return ['code' => 1, 'message' => '路径无法读取'];
+            $res = new ErrorResponse('路径无法读取');
+            return new JsonResponse($res);
         }
 
         $pathInfo = PathSql::info($mediaId, $path);
 
         // 媒体库下有相同路径 返回错误
         if ($pathInfo) {
-            return ['code' => 1, 'message' => '路径已存在,请勿重复添加', 'status' => 'path add filed'];
+            $res = new ErrorResponse('路径已存在,请勿重复添加', 'path add filed');
+            return new JsonResponse($res);
         }
+
         // 获取pathId
-        $sqlRes = PathSql::add(['mediaId' => $mediaId, 'path' => $path, 'autoScan' => $autoScan, 'include' => $include, 'exclude' => $exclude]);
+        $pathInfo = PathSql::add(['mediaId' => $mediaId, 'path' => $path, 'autoScan' => $autoScan, 'include' => $include, 'exclude' => $exclude]);
 
-        if ($sqlRes['code'] == 1) {
-            return $sqlRes;
+        if (!$pathInfo) {
+            $res = new ErrorResponse('路径添加错误', 'path add filed');
+            return new JsonResponse($res);
         }
-
-        $pathInfo = $sqlRes['info'];
 
         // 添加扫描任务
-        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
-        if ($dispatchSync) {
-            Scan::dispatchSync($pathInfo->pathId);
-        } else {
-            Scan::dispatch($pathInfo->pathId)->onQueue('scan');
-        }
+        JobDispatch::handle('Scan', 'scan', $pathInfo->pathId);
 
-        return ['code' => 0, 'message' => '新增成功', 'status' => 'path add success'];
+        $res = new InterfacesResponse($pathInfo, '路径添加成功.', 'path add success');
+        return new JsonResponse($res);
     }
 
     /**
@@ -92,8 +98,14 @@ class Path extends Controller
     public function delete(Request $request)
     {
         $pathId = $request->post('pathId');
-        return PathSql::path_delete($pathId);
+
+        JobDispatch::handle('DeletePath', 'delete', $pathId);
+        $sqlRes = PathSql::path_delete($pathId);
+
+        $res = new InterfacesResponse($sqlRes, '路径添加成功.', 'path add success');
+        return new JsonResponse($res);
     }
+
     /**
      * @description: 扫描
      * @param {Request} $request
@@ -102,16 +114,11 @@ class Path extends Controller
     public function scan(Request $request)
     {
         $pathId = $request->post('pathId');
-        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
-        if ($dispatchSync) {
-            // 同步执行 可调试
-            Scan::dispatchSync($pathId);
-        } else {
-            // 队列运行
-            Scan::dispatch($pathId)->onQueue('scan');
-        }
 
-        return ['code' => 0, 'message' => '任务添加成功', 'status' => 'scan success'];
+        JobDispatch::handle('Scan', 'scan', $pathId);
+
+        $res = new InterfacesResponse('', '扫描任务添加成功.', 'path-scan add success');
+        return new JsonResponse($res);
     }
     /**
      * @description: 重新扫描
@@ -122,18 +129,10 @@ class Path extends Controller
     {
         $pathId = $request->post('pathId');
 
-        MangaSql::manga_delete_by_path($pathId);
-        
-        // 调试模式下同步运行
-        $dispatchSync = Utils::config_read('debug', 'dispatchSync');
-        if ($dispatchSync) {
-            // 同步执行 可调试
-            Scan::dispatchSync($pathId);
-        } else {
-            // 队列运行
-            Scan::dispatch($pathId)->onQueue('scan');
-        }
+        JobDispatch::handle('DeletePath', 'delete', $pathId, true);
+        JobDispatch::handle('Scan', 'scan', $pathId);
 
-        return ['code' => 0, 'message' => '任务添加成功', 'status' => 'scan success'];
+        $res = new InterfacesResponse('', '重新扫描任务添加成功.', 'path-rescan add success');
+        return new JsonResponse($res);
     }
 }

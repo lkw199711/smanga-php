@@ -189,8 +189,8 @@ class ScanManga implements ShouldQueue
             } else {
                 // 漫画原本存在,获取所有漫画章节进行增减判断
                 $mangaId = $mangaInfo->mangaId;
-                $res = ChapterSql::get_nopage($mangaId, 'id');
-                $chapterListSql = $res['list']->data;
+                $sqlList = ChapterSql::get_nopage($mangaId, 'id');
+                $chapterListSql = $sqlList->list;
             }
 
             // 插入漫画失败
@@ -297,22 +297,20 @@ class ScanManga implements ShouldQueue
             // 写入标签
             foreach ($tags as $val) {
 
-                $sqlRes = TagSql::has_tag($val);
+                $tagInfo = TagSql::has_tag($val);
                 // 如果没有则新建标签
-                if (!$sqlRes) {
+                if (!$tagInfo) {
 
-                    $res = TagSql::add([
+                    $tagInfo = TagSql::add([
                         'userId' => 0,
                         'tagName' => $val,
                         'tagColor' => $tagColor
                     ]);
-
-                    $sqlRes = $res['request'];
                 }
 
                 // 添加标签关联
                 MangaTagSql::add([
-                    'tagId' => $sqlRes->tagId,
+                    'tagId' => $tagInfo->tagId,
                     'mangaId' => $mangaInfo->mangaId,
                 ]);
             }
@@ -374,6 +372,11 @@ class ScanManga implements ShouldQueue
      */
     private function get_chapter_list($path)
     {
+        if (!is_dir($path)) {
+            ErrorHandling::handle('指定非目录文件,请检查 媒体库类型 设置');
+            return [];
+        }
+
         $list = array();
         $dir = scandir($path);
         $dir = array_diff($dir, ['.', '..']);

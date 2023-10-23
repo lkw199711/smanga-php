@@ -3,20 +3,24 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-18 01:56:35
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-21 17:49:03
+ * @LastEditTime: 2023-10-23 20:25:12
  * @FilePath: /php/laravel/app/Jobs/Compress.php
  */
 
 namespace App\Jobs;
 
 use App\Http\Controllers\Utils;
+use App\Http\PublicClass\ErrorResponse;
 use App\Models\ChapterSql;
 use App\Models\CompressSql;
 use App\Models\MangaSql;
+use Error;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
@@ -71,9 +75,9 @@ class Compress implements ShouldQueue
 
         $compressInfo = CompressSql::add($data);
 
-        if ($compressInfo['code'] === 1) {
-            echo "error 章节 “{$chapterInfo->chapterName}” 转化记录插入失败";
-            return false;
+        if (!$compressInfo) {
+            $res = new ErrorResponse("章节 “{$chapterInfo->chapterName}” 转化记录插入失败", 'comporess error.');
+            return new JsonResponse($res);
         }
 
         // 文件夹不存在则创建

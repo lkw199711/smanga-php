@@ -2,13 +2,15 @@
 /*
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 13:40:56
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 22:44:41
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-24 02:48:43
  * @FilePath: \lar-demo\app\Models\BookMark.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,12 +29,14 @@ class BookMarkSql extends Model
     public $timestamps = true;
 
     const CREATED_AT = 'createTime';
+
     /**
      * 表中仅有createTime字段 重新setUpdatedAt方法置空操作 解决报错
      */
     public function setUpdatedAt($value)
     {
     }
+
     /**
      * @description: 获取用户书签列表-分页
      * @param {*} $userId
@@ -41,11 +45,19 @@ class BookMarkSql extends Model
      */
     public static function get($userId, $page = 1, $pageSize = 10)
     {
-        $list = self::join('chapter', 'chapter.chapterId', 'bookmark.chapterId')
+        $paginate = self::join('chapter', 'chapter.chapterId', 'bookmark.chapterId')
             ->join('manga', 'manga.mangaId', 'bookmark.mangaId')
-            ->where('userId', $userId)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+            ->where('userId', $userId)
+            ->paginate($pageSize, ['*'], 'page', $page);
+
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
+
     /**
      * @description: 获取用户书签列表
      * @param {*} $userId
@@ -54,8 +66,9 @@ class BookMarkSql extends Model
     public static function get_nopage($userId)
     {
         $list = self::where('userId', $userId)->get();
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        return new SqlList($list, count($list));
     }
+
     /**
      * @description: 获取全部书签
      * @param {*} $page
@@ -63,9 +76,15 @@ class BookMarkSql extends Model
      */
     public static function all($page = 1, $pageSize = 10)
     {
-        $list = self::paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        $paginate = self::paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
+
     /**
      * @description: 新增书签
      * @param {*} $data
@@ -74,9 +93,9 @@ class BookMarkSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('书签新增错误', $e->getMessage());
         }
     }
     /**
@@ -87,9 +106,9 @@ class BookMarkSql extends Model
     public static function remove($bookmarkId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($bookmarkId)];
+            return self::destroy($bookmarkId);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('书签删除错误', $e->getMessage());
         }
     }
 
@@ -101,9 +120,9 @@ class BookMarkSql extends Model
     public static function delete_by_mangaid($mangaId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+            return self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('书签删除错误', $e->getMessage());
         }
     }
 
@@ -115,9 +134,9 @@ class BookMarkSql extends Model
     public static function delete_by_chapter($chapterId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+            return self::where('chapterId', $chapterId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('书签删除错误', $e->getMessage());
         }
     }
 }

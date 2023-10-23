@@ -3,16 +3,19 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-17 20:43:13
+ * @LastEditTime: 2023-10-24 00:21:16
  * @FilePath: /php/laravel/app/Http/Controllers/Tag.php
  */
 
 namespace App\Http\Controllers;
 
+use App\Http\PublicClass\InterfacesResponse;
 use App\Models\MangaTagSql;
 use App\Models\TagSql;
 use App\Models\UserSql;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class Tag extends Controller
 {
@@ -113,7 +116,8 @@ class Tag extends Controller
             MangaTagSql::add(['tagId' => $tagId, 'mangaId' => $mangaId, 'userId' => $userId]);
         }
 
-        return ['code' => 0, 'message' => '修改成功', 'status' => 'Manga tag edit successful.'];
+        $res = new InterfacesResponse('', '标签修改成功', 'Manga tag edit successful.');
+        return new JsonResponse($res);
     }
 
     /**

@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-10-12 23:32:56
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-21 17:48:57
+ * @LastEditTime: 2023-10-23 14:21:49
  * @FilePath: /smanga-php/app/Http/Controllers/Utils.php
  */
 
@@ -85,7 +85,7 @@ class Utils extends Controller
         $dir = array_diff($dir, ['.', '..']);
         // $dir = array_map(fn ($n) => $path . '/' . $n, $dir);
 
-        foreach($dir as $file){
+        foreach ($dir as $file) {
             $route = $path . "/" . $file;
 
             // 添加图片
@@ -321,5 +321,19 @@ class Utils extends Controller
                 'message' => $message
             ]);
         }
+    }
+
+    public static function dispatch_job($jobName, $queueName, ...$jobData)
+    {
+        $dispatchSync = self::config_read('debug', 'dispatchSync');
+        $dispatchMethod = $dispatchSync ? 'dispatchSync' : 'dispatch';
+
+        $job = new $jobName(...$jobData);
+
+        if (!$dispatchSync) {
+            $job->onQueue($queueName);
+        }
+
+        $job->$dispatchMethod();
     }
 }

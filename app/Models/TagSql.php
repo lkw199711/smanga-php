@@ -3,12 +3,13 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-24 12:13:00
+ * @LastEditTime: 2023-10-24 01:22:41
  * @FilePath: \lar-demo\app\Models\TagSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -75,9 +76,9 @@ class TagSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle('标签插入错误', $e->getMessage());
         }
     }
     /**

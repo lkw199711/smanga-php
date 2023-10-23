@@ -2,15 +2,18 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-14 17:41:17
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-23 23:09:10
  * @FilePath: /php/laravel/app/Models/Config.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\InterfacesResponse;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class ConfigSql
 
@@ -37,13 +40,7 @@ extends Model
      */
     public static function get($userId)
     {
-        $res = self::where('userId', $userId)->first();
-
-        if ($res) {
-            return ['code' => 0, 'configValue' => $res->configValue];
-        } else {
-            return ['code' => 1, 'text' => '无用户配置数据', 'sqlRes' => $res];
-        }
+        return self::where('userId', $userId)->first();
     }
     /**
      * @description: 设置用户配置
@@ -53,9 +50,9 @@ extends Model
     public static function set($userId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '保存成功', 'sqlRes' => self::updateOrCreate(['userId' => $userId], $data)];
+            return self::updateOrCreate(['userId' => $userId], $data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('用户配置设置失败.', $e->getMessage());
         }
     }
 }

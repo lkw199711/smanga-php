@@ -3,15 +3,19 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-29 20:48:38
+ * @LastEditTime: 2023-10-24 00:20:27
  * @FilePath: /php/app/Http/Controllers/Media.php
  */
 
 namespace App\Http\Controllers;
 
+use App\Http\PublicClass\ErrorResponse;
+use App\Http\PublicClass\InterfacesResponse;
+use App\Http\PublicClass\ListResponse;
 use App\Models\MediaSql;
 use App\Models\UserSql;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class Media extends Controller
 {
@@ -30,10 +34,13 @@ class Media extends Controller
         $mediaLimit = UserSql::get_media_limit($userId);
 
         if ($mediaLimit) {
-            return MediaSql::get($page, $pageSize, $mediaLimit);
+            $sqlList = MediaSql::get($page, $pageSize, $mediaLimit);
         } else {
-            return MediaSql::get_nolimit($page, $pageSize);
+            $sqlList = MediaSql::get_nolimit($page, $pageSize);
         }
+
+        $res = new ListResponse($sqlList->list, $sqlList->count, '获取媒体库列表成功.');
+        return new JsonResponse($res);
     }
     /**
      * @description: 新增媒体库
@@ -56,8 +63,17 @@ class Media extends Controller
             'fileType' => $fileType, 'defaultBrowse' => $defaultBrowse, 'removeFirst' => $removeFirst, 'direction' => $direction,
         ];
 
-        return MediaSql::add($data);
+        $mediaInfo = MediaSql::add($data);
+
+        if (!$mediaInfo) {
+            $res = new ErrorResponse('媒体库添加失败.', 'media add filed.');
+            return new JsonResponse($res);
+        }
+
+        $res = new InterfacesResponse($mediaInfo, '媒体库添加成功.', 'path add success.');
+        return new JsonResponse($res);
     }
+
     /**
      * @description: 修改媒体库信息
      * @param {Request} $request
@@ -79,12 +95,25 @@ class Media extends Controller
             'fileType' => $fileType, 'defaultBrowse' => $defaultBrowse, 'removeFirst' => $removeFirst, 'direction' => $direction
         ];
 
-        return MediaSql::media_update($mediaId, $data);
+        $sqlRes = MediaSql::media_update($mediaId, $data);
+
+        $res = new InterfacesResponse($sqlRes, '媒体库修改成功.', 'path update success.');
+        return new JsonResponse($res);
     }
+
+    /**
+     * @description: 删除媒体库
+     * @param {Request} $request
+     * @return {*}
+     */
     public function delete(Request $request)
     {
         $mediaId = $request->post('mediaId');
 
-        return MediaSql::media_delete($mediaId);
+        JobDispatch::handle('DeleteMedia', 'delete', $mediaId);
+        $sqlRes = MediaSql::media_delete($mediaId);
+
+        $res = new InterfacesResponse($sqlRes, '媒体库删除成功.', 'path delete success.');
+        return new JsonResponse($res);
     }
 }

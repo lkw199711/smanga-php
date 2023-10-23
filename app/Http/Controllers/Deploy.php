@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\PublicClass\ErrorResponse;
+use App\Http\PublicClass\InterfacesResponse;
 use App\Models\UserSql;
 use App\Models\VersionSql;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +23,10 @@ class Deploy extends Controller
 
         try {
             mysqli_connect($ip, $userName, $passWord, $database, $port);
-            return ['code' => 0, 'message' => '数据库链接成功'];
+            $res = new InterfacesResponse('', '数据库链接成功', 'database link error.');
+            return new JsonResponse($res);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '数据库链接错误', 'eMsg' => $e->getMessage()];
+            return new ErrorResponse('数据库链接错误', 'database link error.', $e->getMessage());
         }
     }
     /**
@@ -66,9 +70,10 @@ class Deploy extends Controller
                 'DB_PASSWORD' => $passWord
             ]);
 
-            return ['code' => 0, 'message' => '数据库链接成功'];
+            $res = new InterfacesResponse('', '数据库链接成功', 'database link error.');
+            return new JsonResponse($res);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '数据库链接错误', 'eMsg' => $e->getMessage()];
+            return new ErrorResponse('数据库链接错误', 'database link error.', $e->getMessage());
         }
     }
     public static function database_init(Request $request)
@@ -124,8 +129,8 @@ class Deploy extends Controller
 
         $version = VersionSql::list();
         $vers = [];
-        if ($version['code'] == 0) {
-            $verList = $version['list'];
+        if ($version) {
+            $verList = $version;
             for ($i = 0; $i < count($verList); $i++) {
                 array_push($vers, $verList[$i]['version']);
             }

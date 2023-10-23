@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-23 00:49:01
+ * @LastEditTime: 2023-10-23 18:14:40
  * @FilePath: /php/laravel/app/Http/Controllers/Manga.php
  */
 
@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 use App\Http\PublicClass\ErrorResponse;
 use App\Http\PublicClass\InterfacesResponse;
 use App\Http\PublicClass\ListResponse;
+use App\Jobs\DeleteManga;
 use App\Models\MangaSql;
 use App\Models\UserSql;
 use Illuminate\Http\JsonResponse;
@@ -38,19 +39,17 @@ class Manga extends Controller
 
         if ($keyWord) {
             $sqlList = MangaSql::manga_search($keyWord, $mediaLimit, $order, $page, $pageSize, $userId);
-            $res = new ListResponse($sqlList->list, $sqlList->count, '获取漫画列表成功.');
         }
 
         if ($mediaId) {
             // 通过媒体库获取漫画
             $sqlList = MangaSql::get($page, $pageSize, $mediaId, $mediaLimit, $userId, $order);
-            $res = new ListResponse($sqlList->list, $sqlList->count, '获取漫画列表成功.');
         } else {
             // 获取全部漫画
             $sqlList = MangaSql::get_nomedia($page, $pageSize, $mediaLimit);
-            $res = new ListResponse($sqlList->list, $sqlList->count, '获取漫画列表成功.');
         }
-
+        
+        $res = new ListResponse($sqlList->list, $sqlList->count, '获取漫画列表成功.');
         return new JsonResponse($res);
     }
     /**
@@ -91,6 +90,8 @@ class Manga extends Controller
         $mangaId = $request->post('mangaId');
 
         $sqlRes = MangaSql::manga_delete($mangaId);
+
+        JobDispatch::handle('DeleteManga', 'scan', $mangaId);
 
         if ($sqlRes) {
             $res = new InterfacesResponse($sqlRes, '漫画删除成功', 'Manga delete success.');

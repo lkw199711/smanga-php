@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 15:37:18
+ * @LastEditTime: 2023-10-23 20:28:10
  * @FilePath: /php/laravel/app/Models/CollectSql.php
  */
 
@@ -43,7 +43,7 @@ class CollectSql extends Model
     public static function get_manga($userId, $page = 1, $pageSize = 10, $order)
     {
         $orderText = self::get_manga_order_text($order);
-        
+
         $sql = self::join('manga', 'collect.mangaId', 'manga.mangaId')
             ->where('userId', '=', $userId)
             ->where('collectType', 'manga')
@@ -188,7 +188,7 @@ class CollectSql extends Model
     public static function delete_by_mangaid($mangaId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+            self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
             ErrorHandling::handle("移除漫画收藏错误,mangaId=>$mangaId", $e->getMessage());
         }
@@ -202,7 +202,7 @@ class CollectSql extends Model
     public static function delete_by_chapter($chapterId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+            return self::where('chapterId', $chapterId)->delete();
         } catch (\Exception $e) {
             ErrorHandling::handle("移除章节收藏错误,chapterId=>$chapterId", $e->getMessage());
         }
