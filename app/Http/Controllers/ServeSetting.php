@@ -24,14 +24,12 @@ class ServeSetting extends Controller
         // 验证用户是否有权限进行服务器设置 (待完成)
         $userId = $request->post('userId');
 
-        $interval = Utils::config_read('scan', 'interval');
-        $autoCompress = Utils::config_read('scan', 'autoCompress');
+        $data = [
+            'interval' => Utils::config_read('scan', 'interval'),
+            'autoCompress' => Utils::config_read('scan', 'autoCompress')
+        ];
 
-        $res = new ServeSettingResponse();
-        $res->status = 'get server setting success.';
-        $res->interval = $interval;
-        $res->autoCompress = $autoCompress;
-
+        $res = new InterfacesResponse($data,'', 'get server setting success.');
         return new JsonResponse($res);
     }
 
@@ -48,9 +46,9 @@ class ServeSetting extends Controller
 
         Utils::config_write($title, $key, $value);
 
-        $response = new ServeSettingRequest();
+        $response = new ServeSettingResponse();
         $response->message = '设置成功';
-        $response->status = 'set server setting success.';
+        $response->state = 'set server setting success.';
         $response->$key = Utils::config_read($title, $key);
 
         return new JsonResponse($response);
@@ -73,14 +71,8 @@ class ServeSetting extends Controller
         Utils::config_write('imagick', 'density', $density);
         Utils::config_write('imagick', 'quality', $quality);
 
-        return [
-            'code' => 0,
-            'message' => '设置压缩选项成功',
-            'data' => [
-                'interval' => Utils::config_read('scan', 'interval')
-            ]
-
-        ];
+        $res = new InterfacesResponse(Utils::config_read('scan', 'interval'), '设置压缩选项成功', 'compress set success.');
+        return new JsonResponse($res);
     }
     /**
      * @description: 压缩配置项获取
@@ -88,16 +80,15 @@ class ServeSetting extends Controller
      */
     public function imagick_get()
     {
-        return [
-            'code' => 0,
-            'request' => '获取压缩设置成功',
-            'data' => [
-                'memory' => Utils::config_read('imagick', 'memory'),
-                'map' => Utils::config_read('imagick', 'map'),
-                'density' => Utils::config_read('imagick', 'density'),
-                'quality' => Utils::config_read('imagick', 'quality'),
-            ]
+        $data = [
+            'memory' => Utils::config_read('imagick', 'memory'),
+            'map' => Utils::config_read('imagick', 'map'),
+            'density' => Utils::config_read('imagick', 'density'),
+            'quality' => Utils::config_read('imagick', 'quality'),
         ];
+
+        $res = new InterfacesResponse($data, '', 'setting get success.');
+        return new JsonResponse($res);
     }
     /**
      * @description: 获取守护进程项目
@@ -105,13 +96,13 @@ class ServeSetting extends Controller
      */
     public function daemon_get()
     {
-        return [
-            'code' => 0,
-            'request' => '获取守护进程设置项成功',
-            'data' => [
-                'time' => Utils::config_read('daemon', 'time')
-            ]
+
+        $data = [
+            Utils::config_read('daemon', 'time')
         ];
+
+        $res = new InterfacesResponse($data, '', 'daemon get success.');
+        return new JsonResponse($res);
     }
     /**
      * @description: 设置守护进程项目
@@ -124,13 +115,11 @@ class ServeSetting extends Controller
 
         Utils::config_write('daemon', 'time', $time);
 
-        return [
-            'code' => 0,
-            'message' => '设置守护进程选项成功',
-            'data' => [
-                'time' => Utils::config_read('daemon', 'time')
-            ]
-
+        $data = [
+            'time' => Utils::config_read('daemon', 'time')
         ];
+
+        $res = new InterfacesResponse($data, '', 'daemon get success.');
+        return new JsonResponse($res);
     }
 }

@@ -2,14 +2,17 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-14 13:32:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-16 22:57:04
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-24 20:21:04
  * @FilePath: /php/laravel/app/Http/Controllers/History.php
  */
 
 namespace App\Http\Controllers;
 
+use App\Http\PublicClass\InterfacesResponse;
+use App\Http\PublicClass\ListResponse;
 use App\Models\HistorySql;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class History extends Controller
@@ -24,7 +27,10 @@ class History extends Controller
         $userId = $request->post('userId');
         $page = $request->post('page');
         $pageSize = $request->post('pageSize');
-        return HistorySql::get($userId, $page, $pageSize);
+        $sqlList = HistorySql::get($userId, $page, $pageSize);
+
+        $res = new ListResponse($sqlList->list, $sqlList->count);
+        return new JsonResponse($res);
     }
     /**
      * @description: 获取漫画最后一次阅读记录
@@ -35,8 +41,9 @@ class History extends Controller
     {
         $userId = $request->post('userId');
         $mangaId = $request->post('mangaId');
-
-        return HistorySql::get_latest($mangaId, $userId);
+        $latestChapter = HistorySql::get_latest($mangaId, $userId);
+        $res = new InterfacesResponse($latestChapter, '最后阅读记录获取成功.', 'get latest-chapter success.');
+        return new JsonResponse($res);
     }
     /**
      * @description: 新增历史记录
@@ -54,7 +61,10 @@ class History extends Controller
         $chapterPath = $request->post('chapterPath');
 
         $data = ['userId' => $userId, 'mediaId' => $mediaId, 'mangaId' => $mangaId, 'chapterId' => $chapterId];
-        return HistorySql::add($data);
+        $historyInfo = HistorySql::add($data);
+
+        $res = new InterfacesResponse($historyInfo, '', 'history add success.');
+        return new JsonResponse($res);
     }
     /**
      * @description: 删除历史记录
@@ -65,6 +75,9 @@ class History extends Controller
     {
         $historyId = $request->post('historyId');
         $chapterId = HistorySql::info($historyId)->chapterId;
-        return HistorySql::delete_by_chapter($chapterId);
+        
+        $sqlRes = HistorySql::delete_by_chapter($chapterId);
+        $res = new InterfacesResponse($sqlRes, '历史记录删除成功.', 'history delete success.');
+        return new JsonResponse($res);
     }
 }

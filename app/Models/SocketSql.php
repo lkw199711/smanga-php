@@ -2,13 +2,14 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-21 20:54:48
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-21 22:28:18
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-24 18:24:36
  * @FilePath: /php/laravel/app/Models/SocketSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -48,17 +49,17 @@ class SocketSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("长连接新增失败.", $e->getMessage());
         }
     }
     public static function socket_update($fd, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::updateOrCreate(['fd' => $fd], $data)];
+            return self::updateOrCreate(['fd' => $fd], $data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("长连接更新失败.", $e->getMessage());
         }
     }
 
@@ -70,10 +71,9 @@ class SocketSql extends Model
     public static function socket_delete($fd)
     {
         try {
-            self::where('fd', $fd)->delete();
-            return ['code' => 0, 'message' => '删除成功'];
+            return self::where('fd', $fd)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("长连接移除失败.", $e->getMessage());
         }
     }
     /**
@@ -89,22 +89,21 @@ class SocketSql extends Model
             // 取出fd
             $fds = [];
 
-            foreach($list as $value){
-                array_push($fds,$value->fd);
+            foreach ($list as $value) {
+                array_push($fds, $value->fd);
             }
 
-            return ['code' => 0, 'message' => '获取成功', 'fds' => $fds];
+            return $fds;
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("长连接获取失败.", $e->getMessage());
         }
     }
     public static function clear()
     {
         try {
-            self::query()->delete();
-            return ['code' => 0, 'message' => '删除成功'];
+            return self::query()->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("长连接清空失败.", $e->getMessage());
         }
     }
 }

@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-12 23:38:24
+ * @LastEditTime: 2023-10-24 17:10:03
  * @FilePath: /php/laravel/app/Models/lastReadSql.php
  */
 
@@ -122,9 +122,9 @@ class LastReadSql extends Model
     public static function remove($historyId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('historyId', $historyId)->delete()];
+            return self::where('historyId', $historyId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("阅读记录删除失败.", $e->getMessage());
         }
     }
 
@@ -136,9 +136,9 @@ class LastReadSql extends Model
     public static function delete_by_mangaid($mangaId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+            return self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("阅读记录删除失败.", $e->getMessage());
         }
     }
 
@@ -150,9 +150,9 @@ class LastReadSql extends Model
     public static function delete_by_chapter($chapterId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+            return self::where('chapterId', $chapterId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("阅读记录删除失败.", $e->getMessage());
         }
     }
 }

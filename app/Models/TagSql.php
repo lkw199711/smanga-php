@@ -3,13 +3,14 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 01:22:41
+ * @LastEditTime: 2023-10-25 01:46:54
  * @FilePath: \lar-demo\app\Models\TagSql.php
  */
 
 namespace App\Models;
 
 use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -47,8 +48,13 @@ class TagSql extends Model
      */
     public static function get($userId, $page, $pageSize)
     {
-        $res = self::where('userId', $userId)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
+        $paginate = self::where('userId', $userId)->paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
     /**
      * @description: 获取当前用户的全部标签
@@ -57,8 +63,8 @@ class TagSql extends Model
      */
     public static function get_no_page($userId)
     {
-        $res = self::whereIn('tag.userid', [$userId, 0])->get();
-        return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
+        $list = self::whereIn('tag.userId', [$userId, 0])->get();
+        return new SqlList($list, count($list));
     }
     /**
      * @description: 获取全部扫描记录
@@ -82,7 +88,7 @@ class TagSql extends Model
         }
     }
     /**
-     * @description: 更新扫描记录
+     * @description: 更新标签记录
      * @param {*} $pathId
      * @param {*} $data
      * @return {*}
@@ -90,22 +96,22 @@ class TagSql extends Model
     public static function tag_update($tagId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('tagId', $tagId)->update($data)];
+            return self::where('tagId', $tagId)->update($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle('标签修改错误', $e->getMessage());
         }
     }
     /**
-     * @description: 删除扫描记录
+     * @description: 删除标签记录
      * @param {*} $scanId
      * @return {*}
      */
     public static function tag_delete($tagId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($tagId)];
+            return self::destroy($tagId);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            ErrorHandling::handle('标签删除错误', $e->getMessage());
         }
     }
 

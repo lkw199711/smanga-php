@@ -3,19 +3,19 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 00:21:16
+ * @LastEditTime: 2023-10-25 00:59:18
  * @FilePath: /php/laravel/app/Http/Controllers/Tag.php
  */
 
 namespace App\Http\Controllers;
 
 use App\Http\PublicClass\InterfacesResponse;
+use App\Http\PublicClass\ListResponse;
 use App\Models\MangaTagSql;
 use App\Models\TagSql;
 use App\Models\UserSql;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 class Tag extends Controller
 {
@@ -34,10 +34,12 @@ class Tag extends Controller
         $nopage = $request->post('nopage');
 
         if ($nopage) {
-            return TagSql::get_no_page($userId);
+            $sqlList = TagSql::get_no_page($userId);
         }
 
-        return TagSql::get($userId, $page, $pageSize);
+        $sqlList = TagSql::get($userId, $page, $pageSize);
+        $res = new ListResponse($sqlList->list, $sqlList->count, '标签列表获取成功.');
+        return new JsonResponse($res);
     }
 
     /**
@@ -64,11 +66,14 @@ class Tag extends Controller
             'description' => $description,
         ];
 
-        return TagSql::add($data);
+        $tagInfo = TagSql::add($data);
+
+        $res = new InterfacesResponse($tagInfo, '标签新增成功.', 'tag add success.');
+        return new JsonResponse($res);
     }
 
     /**
-     * @description: 修改漫画信息
+     * @description: 修改标签信息
      * @param {Request} $request
      * @return {*}
      */
@@ -80,19 +85,24 @@ class Tag extends Controller
         $description = $request->post('description');
 
         $data = ['tagName' => $tagName, 'tagColor' => $tagColor, 'description' => $description];
+        $sqlRes = TagSql::tag_update($tagId, $data);
 
-        return TagSql::tag_update($tagId, $data);
+        $res = new InterfacesResponse($sqlRes, '标签修改成功', 'tag update success.');
+        return new JsonResponse($res);
     }
 
     /**
-     * @description: 移除漫画
+     * @description: 移除标签
      * @param {Request} $request
      * @return {*}
      */
     public function delete(Request $request)
     {
         $tagId = $request->post('tagId');
-        return TagSql::tag_delete($tagId);
+        $sqlRes = TagSql::tag_delete($tagId);
+
+        $res = new InterfacesResponse($sqlRes, '标签删除成功', 'tag update success.');
+        return new JsonResponse($res);
     }
 
     /**
@@ -134,10 +144,13 @@ class Tag extends Controller
         $nopage = $request->post('nopage');
 
         if ($nopage) {
-            return MangaTagSql::get_nopage($userId, $mangaId);
+            $sqlList = MangaTagSql::get_nopage($userId, $mangaId);
         }
 
-        return MangaTagSql::get($userId, $mangaId, $page, $pageSize);
+        $sqlList = MangaTagSql::get($userId, $mangaId, $page, $pageSize);
+
+        $res = new ListResponse($sqlList->list, $sqlList->count, '标签列表获取成功.');
+        return new JsonResponse($res);
     }
 
     /**
@@ -150,7 +163,9 @@ class Tag extends Controller
         $tagId = $request->post('tagId');
         $mangaId = $request->post('mangaId');
 
-        return MangaTagSql::add(['tagId' => $tagId, 'mangaId' => $mangaId]);
+        $sqlRes = MangaTagSql::add(['tagId' => $tagId, 'mangaId' => $mangaId]);
+        $res = new InterfacesResponse($sqlRes, '漫画标签新增成功.', 'tag update success.');
+        return new JsonResponse($res);
     }
 
     /**
@@ -162,6 +177,8 @@ class Tag extends Controller
     {
         $mangaTagId = $request->post('mangaTagId');
 
-        return MangaTagSql::manga_tag_delete($mangaTagId);
+        $sqlRes = MangaTagSql::manga_tag_delete($mangaTagId);
+        $res = new InterfacesResponse($sqlRes, '漫画标签移除成功.', 'tag update success.');
+        return new JsonResponse($res);
     }
 }

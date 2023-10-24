@@ -3,12 +3,14 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-06-23 03:58:18
+ * @LastEditTime: 2023-10-24 18:08:09
  * @FilePath: \lar-demo\app\Models\ScanSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,8 +48,13 @@ class ScanSql extends Model
      */
     public static function get($page, $pageSize)
     {
-        $res = self::paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'request' => '获取日志成功', 'list' => $res];
+        $paginate = self::paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
     /**
      * @description: 获取全部扫描记录
@@ -67,7 +74,7 @@ class ScanSql extends Model
         return self::where('pathId', $pathId)->first();
     }
     /**
-     * @description: 新增日志
+     * @description: 新增扫描记录
      * @param {*} $data
      * @return {*}
      */
@@ -76,7 +83,7 @@ class ScanSql extends Model
         try {
             return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("扫描记录新增失败.", $e->getMessage());
         }
     }
     /**
@@ -88,9 +95,9 @@ class ScanSql extends Model
     public static function scan_update($pathId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('pathId', $pathId)->update($data)];
+            return self::where('pathId', $pathId)->update($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("扫描记录更新失败.", $e->getMessage());
         }
     }
     /**
@@ -101,9 +108,9 @@ class ScanSql extends Model
     public static function scan_delete($scanId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($scanId)];
+            return self::destroy($scanId);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("扫描记录删除失败.", $e->getMessage());
         }
     }
     /**
@@ -114,9 +121,9 @@ class ScanSql extends Model
     public static function scan_delete_by_pathid($pathId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('pathId', $pathId)->delete()];
+            return self::where('pathId', $pathId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("扫描记录删除失败.", $e->getMessage());
         }
     }
     /**
@@ -129,7 +136,7 @@ class ScanSql extends Model
         try {
             self::where('createTime', '>', $createTime)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("扫描记录删除失败.", $e->getMessage());
         }
     }
 }

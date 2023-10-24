@@ -3,12 +3,14 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 13:40:56
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-17 20:31:51
+ * @LastEditTime: 2023-10-24 16:46:08
  * @FilePath: \lar-demo\app\Models\CharacterSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -35,7 +37,7 @@ class CharacterSql extends Model
     {
     }
     /**
-     * @description: 获取用户书签列表-分页
+     * @description: 获取角色列表-分页
      * @param {*} $userId
      * @param {*} $page
      * @return {*}
@@ -43,39 +45,44 @@ class CharacterSql extends Model
     public static function get($mangaId)
     {
         $list = self::where('mangaId', $mangaId)->get();
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        $sqlList = new SqlList($list, count($list));
+        return $sqlList;
     }
     /**
-     * @description: 获取用户书签列表
+     * @description: 获取角色列表
      * @param {*} $userId
      * @return {*}
      */
     public static function get_nopage($userId)
     {
         $list = self::where('userId', $userId)->get();
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        return new SqlList($list, count($list));
     }
     /**
-     * @description: 获取全部书签
+     * @description: 获取全部角色
      * @param {*} $page
      * @return {*}
      */
     public static function all($page = 1, $pageSize = 10)
     {
-        $list = self::paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'list' => $list, 'text' => '请求成功'];
+        $paginate = self::paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+        return new SqlList($list, count($count));
     }
     /**
-     * @description: 新增书签
+     * @description: 角色书签
      * @param {*} $data
      * @return {*}
      */
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('角色新增失败.', $e->getMessage());
         }
     }
     /**
@@ -86,12 +93,12 @@ class CharacterSql extends Model
     public static function remove($bookmarkId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($bookmarkId)];
+            self::destroy($bookmarkId);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('角色删除失败.', $e->getMessage());
         }
     }
-    
+
     /**
      * @description: 根据漫画id删除
      * @param {*} $chapterId
@@ -100,11 +107,9 @@ class CharacterSql extends Model
     public static function delete_by_mangaId($mangaId)
     {
         try {
-            $request = self::where('mangaId', $mangaId)->delete();
-
-            return ['code' => 0, 'message' => '删除成功', 'request' => $request];
+            return self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle('角色删除失败.', $e->getMessage());
         }
     }
 }

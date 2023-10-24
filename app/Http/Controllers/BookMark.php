@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 19:03:12
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 02:08:19
+ * @LastEditTime: 2023-10-25 00:35:03
  * @FilePath: \lar-demo\app\Http\Controllers\BookMark.php
  */
 
@@ -88,7 +88,7 @@ class BookMark extends Controller
         $bookmarkId = $request->post('bookmarkId');
         $sqlRes = BookMarkSql::remove($bookmarkId);
 
-        $res = new InterfacesResponse($sqlRes, '书签新增成功', 'bookmark add success.');
+        $res = new InterfacesResponse($sqlRes, '书签删除成功', 'bookmark remove success.');
 
         return new JsonResponse($res);
     }

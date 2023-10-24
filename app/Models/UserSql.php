@@ -2,13 +2,15 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-14 16:59:00
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-14 21:04:07
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-24 18:37:40
  * @FilePath: /php/laravel/app/Models/UesrSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -41,14 +43,20 @@ class UserSql extends Model
         return $date->format('Y-m-d H:i:s');
     }
     /**
-     * @description: 或许用户列表
+     * @description: 用户列表
      * @param {*} $page
      * @param {*} $pageSize
      * @return {*}
      */
     public static function get($page, $pageSize)
     {
-        return ['code' => 0, 'text' => '获取成功', 'list' => self::paginate($pageSize, ['*'], 'page', $page)];
+        $paginate = self::paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
     /**
      * @description: 检查用户是否存在
@@ -67,9 +75,9 @@ class UserSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'successful' => true, 'sqlRes' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'successful' => false, 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("用户新增失败.", $e->getMessage());
         }
     }
     /**
@@ -81,16 +89,17 @@ class UserSql extends Model
     public static function user_update($userId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'sqlRes' => self::where('userId',$userId)->update($data)];
+            return self::where('userId', $userId)->update($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("用户修改失败.", $e->getMessage());
         }
     }
-    public static function user_delete($userId){
+    public static function user_delete($userId)
+    {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'sqlRes' => self::where('userId',$userId)->delete()];
+            return self::where('userId', $userId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("用户删除失败.", $e->getMessage());
         }
     }
     /**
@@ -98,8 +107,9 @@ class UserSql extends Model
      * @param {*} $userId
      * @return {*}
      */
-    public static function get_media_limit($userId){
-        $text = self::where('userId',$userId)->first()->mediaLimit;
-        return explode('/',$text);
+    public static function get_media_limit($userId)
+    {
+        $text = self::where('userId', $userId)->first()->mediaLimit;
+        return explode('/', $text);
     }
 }

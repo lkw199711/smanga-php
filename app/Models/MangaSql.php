@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-23 17:33:17
+ * @LastEditTime: 2023-10-25 01:57:23
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -64,11 +64,11 @@ class MangaSql extends Model
             $tagArr = MangaTagSql::get_nopage($userId, $row->mangaId);
 
             $characterRes = CharacterSql::get($row->mangaId);
-            $characters = $characterRes['list'];
+            $characters = $characterRes->list;
             $metaRes = MetaSql::get($row->mangaId);
-            $metas = $metaRes['list'];
+            $metas = $metaRes;
 
-            $row->tags = $tagArr['list'];
+            $row->tags = $tagArr->list;
             $row->characters = $characters;
             $row->metas = $metas;
             return $row;
@@ -85,9 +85,9 @@ class MangaSql extends Model
     public static function get_manga_info($mangaId, $userId)
     {
         $info = self::where('mangaId', $mangaId)->first();
-        $meta = MetaSql::get($mangaId)['list'];
-        $character = CharacterSql::get($mangaId)['list'];
-        $tags = MangaTagSql::get_nopage($userId, $mangaId)['list'];
+        $meta = MetaSql::get($mangaId);
+        $character = CharacterSql::get($mangaId)->list;
+        $tags = MangaTagSql::get_nopage($userId, $mangaId)->list;
 
         return [
             'info' => $info,
@@ -164,11 +164,11 @@ class MangaSql extends Model
             $tagArr = MangaTagSql::get_nopage($userId, $row->mangaId);
 
             $characterRes = CharacterSql::get($row->mangaId);
-            $characters = $characterRes['list'];
+            $characters = $characterRes->list;
             $metaRes = MetaSql::get($row->mangaId);
-            $metas = $metaRes['list'];
+            $metas = $metaRes;
 
-            $row->tags = $tagArr['list'];
+            $row->tags = $tagArr->list;
             $row->characters = $characters;
             $row->metas = $metas;
             return $row;
@@ -271,7 +271,7 @@ class MangaSql extends Model
         $orderText = self::get_order_text($order);
 
         $model = self::join('mangaTag', 'mangaTag.mangaId', 'manga.mangaId')
-            ->whereIn('tagId', $tagIdArr)->orderByRaw($orderText);
+            ->whereIn('tagId', $tagIdArr)->orderByRaw($orderText)->groupBy('mangaTag.mangaId');
 
         $paginate = $model->paginate($pageSize, ['*'], 'page', $page);
 

@@ -2,13 +2,14 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-05-14 17:24:44
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-24 17:10:53
  * @FilePath: /php/laravel/app/Models/Login.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -40,9 +41,9 @@ class LoginSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'successful'=>true, 'sqlRes' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'successful'=>false, 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("登录记录新增失败.", $e->getMessage());
         }
     }
 }

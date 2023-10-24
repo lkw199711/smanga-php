@@ -2,13 +2,15 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-08-17 00:43:55
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-24 17:07:22
  * @FilePath: /php/laravel/app/Models/HistorySql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +46,7 @@ class HistorySql extends Model
      */
     public static function get($userId, $page, $pageSize)
     {
-        $res = self
+        $paginate = self
             ::join('manga as m', 'history.mangaId', 'm.mangaId')
             ->join('chapter as c', 'history.chapterId', 'c.chapterId')
             ->select(DB::raw('max(history.createTime) as nearTime'))
@@ -56,7 +58,12 @@ class HistorySql extends Model
             ->orderBy('nearTime')
             ->paginate($pageSize, ['*'], 'page', $page);
 
-        return ['code' => 0, 'text' => '获取历史记录成功', 'list' => $res];
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
 
     /**
@@ -67,7 +74,7 @@ class HistorySql extends Model
      */
     public static function get_latest($mangaId, $userId)
     {
-        $res = self
+        $first = self
             ::join('chapter as c', 'history.chapterId', 'c.chapterId')
             ->addSelect('history.historyId', 'history.mangaId', 'history.userId')
             ->addSelect('c.chapterId', 'c.chapterName', 'c.chapterPath', 'c.chapterType', 'c.chapterCover', 'c.browseType')
@@ -76,11 +83,7 @@ class HistorySql extends Model
             ->orderBy('history.createTime')
             ->first();
 
-        // 根据是否获取到数据生产状态码
-        $code = $res ? 0 : 1;
-
-
-        return ['code' => $code, 'text' => '获取历史记录成功', 'info' => $res];
+        return $first;
     }
 
     /**
@@ -91,9 +94,9 @@ class HistorySql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'text' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'text' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("历史记录添加失败.", $e->getMessage());
         }
     }
 
@@ -115,9 +118,9 @@ class HistorySql extends Model
     public static function remove($historyId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('historyId', $historyId)->delete()];
+            return self::where('historyId', $historyId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("历史记录删除失败.", $e->getMessage());
         }
     }
 
@@ -129,9 +132,9 @@ class HistorySql extends Model
     public static function delete_by_mangaid($mangaId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+            return self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("历史记录删除失败.", $e->getMessage());
         }
     }
 
@@ -143,9 +146,9 @@ class HistorySql extends Model
     public static function delete_by_chapter($chapterId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+            return self::where('chapterId', $chapterId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("历史记录删除失败.", $e->getMessage());
         }
     }
 }

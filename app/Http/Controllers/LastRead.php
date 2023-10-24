@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-14 13:32:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-12 23:34:11
+ * @LastEditTime: 2023-10-24 20:22:22
  * @FilePath: /php/laravel/app/Http/Controllers/LastRead.php
  */
 
@@ -45,10 +45,9 @@ class LastRead extends Controller
         $mangaId = $request->post('mangaId');
 
         $info = LastReadSql::get_latest($mangaId, $userId);
-
         $text =  $info ? '获取最终记录成功' : '无最终阅读记录';
-        $res = new InterfacesResponse($info, '', $text);
 
+        $res = new InterfacesResponse($info, '', $text);
         return new JsonResponse($res);
     }
 

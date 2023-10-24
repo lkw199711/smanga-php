@@ -3,12 +3,14 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-09-24 12:13:14
+ * @LastEditTime: 2023-10-25 01:52:55
  * @FilePath: \lar-demo\app\Models\MangaTagSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,28 +46,35 @@ class MangaTagSql extends Model
      * @param {*} $pageSize
      * @return {*}
      */
-    public static function get($userid, $mangaId, $page, $pageSize)
+    public static function get($userId, $mangaId, $page, $pageSize)
     {
-        $res = self::whereIn('userid', [$userid, 0])->where('mangaId', $mangaId)->paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
+        $model = self::join('tag', 'tag.tagId', 'mangaTag.tagId')->whereIn('userId', [$userId * 1, 0])->where('mangaId', $mangaId);
+        $sql = $model->toSql();
+        $paginate = $model->paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
 
     /**
      * @description: 以无分页模式获取漫画标签
-     * @param {*} $userid
+     * @param {*} $userId
      * @param {*} $mangaId
      * @return {*}
      */
     public static function get_nopage($userId, $mangaId)
     {
-        $sql = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
+        $model = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
             ->whereIn('tag.userId', [$userId, 0])
             ->where('mangaId', $mangaId);
 
         // $toSql = $sql->toSql();
 
-        $res = $sql->get();
-        return ['code' => 0, 'request' => '获取标签成功', 'list' => $res];
+        $list = $model->get();
+        return new SqlList($list, count($list));
     }
     /**
      * @description: 获取全部扫描记录
@@ -76,16 +85,16 @@ class MangaTagSql extends Model
         return self::select()->get();
     }
     /**
-     * @description: 新增日志
+     * @description: 新增漫画关联标签
      * @param {*} $data
      * @return {*}
      */
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '添加成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("漫画关联标签新增失败.", $e->getMessage());
         }
     }
 
@@ -97,9 +106,9 @@ class MangaTagSql extends Model
     public static function manga_tag_delete($mangaTagId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::destroy($mangaTagId)];
+            return self::destroy($mangaTagId);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("漫画关联标签删除失败.", $e->getMessage());
         }
     }
 
@@ -111,11 +120,9 @@ class MangaTagSql extends Model
     public static function delete_by_mangaId($mangaId)
     {
         try {
-            $request = self::where('mangaId', $mangaId)->delete();
-
-            return ['code' => 0, 'message' => '删除成功', 'request' => $request];
+            return self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("漫画关联标签删除失败.", $e->getMessage());
         }
     }
     /**
@@ -126,11 +133,11 @@ class MangaTagSql extends Model
      */
     public static function get_by_mangaId($userrId, $mangaId)
     {
-        $res = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
+        $list = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
             ->where('userrId', $userrId)
             ->where('mangaId', $mangaId)
             ->get();
 
-        return $res;
+        return $list;
     }
 }

@@ -521,10 +521,18 @@ class ScanManga implements ShouldQueue
         // 提取图片成功 存入库
         if (is_file($copyPoster)) {
             ChapterSql::chapter_update($this->chapterId, ['chapterCover' => $copyPoster]);
+            // 与漫画区分,新增漫画封面命名
+            $copyMangaPoster = "{$posterPath}/smanga_manga_{$this->mangaId}.png";
 
             if (!$this->mangaCover) {
                 $sidePic = self::side_pic($this->mangaPath);
-                $this->mangaCover = $sidePic ? $sidePic : $copyPoster;
+                if ($sidePic) {
+                    copy($sidePic, $copyMangaPoster);
+                    $this->mangaCover = $copyMangaPoster;
+                } else {
+                    $this->mangaCover =  $copyPoster;
+                }
+
                 MangaSql::manga_update($this->mangaId, ['mangaCover' => $this->mangaCover]);
             }
         } else {

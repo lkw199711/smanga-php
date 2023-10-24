@@ -3,12 +3,14 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 02:47:08
+ * @LastEditTime: 2023-10-24 17:18:17
  * @FilePath: \lar-demo\app\Models\Log.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,8 +48,13 @@ class LogSql extends Model
      */
     public static function get($page, $pageSize)
     {
-        $res = self::paginate($pageSize, ['*'], 'page', $page);
-        return ['code' => 0, 'text' => '获取日志成功', 'list' => $res];
+        $paginate = self::paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
     }
     /**
      * @description: 新增日志
@@ -59,7 +66,7 @@ class LogSql extends Model
         try {
             return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("日志新增失败.", $e->getMessage());
         }
     }
     /**
@@ -72,7 +79,7 @@ class LogSql extends Model
         try {
             return self::create(['logContent' => $logContent]);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("日志新增失败.", $e->getMessage());
         }
     }
 
@@ -86,7 +93,7 @@ class LogSql extends Model
         try {
             return self::create(['logType' => 'warning', 'logLevel' => 1, 'logContent' => $logContent]);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("日志新增失败.", $e->getMessage());
         }
     }
     /**
@@ -99,7 +106,7 @@ class LogSql extends Model
         try {
             self::where('createTime', '>', $createTime)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("日志删除失败.", $e->getMessage());
         }
     }
 }

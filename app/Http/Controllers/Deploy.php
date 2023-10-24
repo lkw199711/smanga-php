@@ -188,7 +188,7 @@ class Deploy extends Controller
             ");
             $link->query("CREATE TABLE IF NOT EXISTS `history`  (
                     `historyId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '历史记录id',
-                    `userid` int(11) NULL DEFAULT NULL COMMENT '用户id',
+                    `userId` int(11) NULL DEFAULT NULL COMMENT '用户id',
                     `mediaId` int(11) NULL DEFAULT NULL COMMENT '媒体库id',
                     `mangaId` int(11) NULL DEFAULT NULL COMMENT '漫画id',
                     `mangaName` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '漫画名称',

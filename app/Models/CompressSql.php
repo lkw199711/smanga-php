@@ -3,12 +3,14 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-05-31 20:42:43
+ * @LastEditTime: 2023-10-24 16:56:48
  * @FilePath: /php/laravel/app/Models/CompressSql.php
  */
 
 namespace App\Models;
 
+use App\Http\Controllers\ErrorHandling;
+use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -48,9 +50,13 @@ class CompressSql extends Model
      */
     public static function get($mediaLimit, $page, $pageSize)
     {
-        $res = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
+        $paginate = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
 
-        return ['code' => 0, 'text' => '获取成功', 'list' => $res];
+        return new SqlList($list, $count);
     }
     /**
      * @description: 根据章节id获取转换记录
@@ -69,9 +75,9 @@ class CompressSql extends Model
     public static function add($data)
     {
         try {
-            return ['code' => 0, 'message' => '新增成功', 'request' => self::create($data)];
+            return self::create($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("转换记录新增失败.", $e->getMessage());
         }
     }
     /**
@@ -82,9 +88,9 @@ class CompressSql extends Model
     public static function compress_update($chapterId, $data)
     {
         try {
-            return ['code' => 0, 'message' => '修改成功', 'request' => self::where('chapterId', $chapterId)->update($data)];
+            return self::where('chapterId', $chapterId)->update($data);
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("转换记录修改失败.", $e->getMessage());
         }
     }
     /**
@@ -95,9 +101,9 @@ class CompressSql extends Model
     public static function compress_delete($compressId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('compressId', $compressId)->delete()];
+            return self::where('compressId', $compressId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }
     }
     /**
@@ -108,10 +114,9 @@ class CompressSql extends Model
     public static function compress_delete_by_path($pathId)
     {
         try {
-            $res = self::join('chapter','compress.chapterId','compress.compressId')->where('pathId', $pathId)->delete();
-            return ['code' => 0, 'message' => '删除成功', 'request' => $res];
+            return self::join('chapter', 'compress.chapterId', 'compress.compressId')->where('pathId', $pathId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }
     }
     /**
@@ -122,9 +127,9 @@ class CompressSql extends Model
     public static function compress_delete_by_chapter($chapterId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('chapterId', $chapterId)->delete()];
+            return self::where('chapterId', $chapterId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }
     }
     /**
@@ -135,9 +140,9 @@ class CompressSql extends Model
     public static function compress_delete_by_manga($mangaId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mangaId', $mangaId)->delete()];
+            return self::where('mangaId', $mangaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }
     }
     /**
@@ -148,9 +153,9 @@ class CompressSql extends Model
     public static function compress_delete_by_media($mediaId)
     {
         try {
-            return ['code' => 0, 'message' => '删除成功', 'request' => self::where('mediaId', $mediaId)->delete()];
+            return self::where('mediaId', $mediaId)->delete();
         } catch (\Exception $e) {
-            return ['code' => 1, 'message' => '系统错误', 'eMsg' => $e->getMessage()];
+            return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }
     }
 }
