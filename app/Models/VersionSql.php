@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 02:57:52
+ * @LastEditTime: 2023-10-26 19:55:35
  * @FilePath: /php/laravel/app/Models/Version.php
  */
 
@@ -39,7 +39,8 @@ class VersionSql extends Model
         try {
             return self::get();
         } catch (\Exception $e) {
-            return ErrorHandling::handle('获取版本列表失败.', $e->getMessage());
+            return [];
+            // return ErrorHandling::handle('获取版本列表失败.', $e->getMessage());
         }
     }
     /**

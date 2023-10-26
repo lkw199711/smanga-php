@@ -102,7 +102,7 @@ class Deploy extends Controller
         if (!Utils::config_read('scan', 'interval ')) {
             Utils::config_write('scan', 'interval', 1 * 24 * 60 * 60);
         }
-
+        
         // 将原有的config数据库设置写入 env
         Utils::update_env([
             'DB_HOST' => $ip,
@@ -125,8 +125,8 @@ class Deploy extends Controller
         $link->set_charset('utf8mb4');
         // 切换当前数据库
         $link->query('use smanga;');
-
-
+        
+        
         $version = VersionSql::list();
         $vers = [];
         if ($version) {
@@ -277,7 +277,7 @@ class Deploy extends Controller
             // 插入smanga的用户名密码
             $link->query("INSERT INTO `user` VALUES (1, 'smanga', 'f7f1fe7186209906a97756ff912bb644', NULL, NULL, NULL);");
         }
-
+        
         // 插入自定义用户名密码
         if ($userName) {
             if (!$passWord) $passWord = '';
@@ -285,7 +285,7 @@ class Deploy extends Controller
             UserSql::add(['userName' => $userName, 'passWord' => $passMd5]);
             // $link->query("INSERT INTO `user` VALUES (1, $userName, $passMd5, NULL, NULL, NULL);");
         }
-
+        
         // 314
         if (array_search('3.1.4', $vers) === false) {
             $link->query("ALTER TABLE compress MODIFY COLUMN compressType enum('zip','rar','pdf','image','7z')");
@@ -295,7 +295,7 @@ class Deploy extends Controller
                 'createTime' => '2023-2-28 8:32:00'
             ]);
         }
-
+        
         // 315
         if (array_search('3.1.5', $vers) === false) {
             VersionSql::add([
@@ -588,7 +588,7 @@ class Deploy extends Controller
                 'createTime' => '2023-6-12 22:16:00'
             ]);
         }
-
+        
         // 333
         if (array_search('3.3.3', $vers) === false) {
             $link->query("CREATE TABLE IF NOT EXISTS `scan`  (
@@ -858,7 +858,7 @@ class Deploy extends Controller
                 'createTime' => '2023-10-20 15:03:39'
             ]);
         }
-
+        
         // 352
         if (array_search('3.5.2', $vers) === false) {
             // 新增3.5.2版本记录
@@ -885,7 +885,7 @@ class Deploy extends Controller
                 'createTime' => '2023-10-22 16:00:38'
             ]);
         }
-
+        
         if (array_search('3.5.5', $vers) === false) {
             VersionSql::add([
                 'version' => '3.5.5',
@@ -894,7 +894,7 @@ class Deploy extends Controller
             ]);
         }
 
-
+        
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
