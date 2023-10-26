@@ -29,7 +29,7 @@ class History extends Controller
         $pageSize = $request->post('pageSize');
         $sqlList = HistorySql::get($userId, $page, $pageSize);
 
-        $res = new ListResponse($sqlList->list, $sqlList->count);
+        $res = new ListResponse($sqlList->list, $sqlList->count, '历史记录列表获取成功');
         return new JsonResponse($res);
     }
     /**

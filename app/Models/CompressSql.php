@@ -3,13 +3,14 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 16:56:48
+ * @LastEditTime: 2023-10-26 17:31:31
  * @FilePath: /php/laravel/app/Models/CompressSql.php
  */
 
 namespace App\Models;
 
 use App\Http\Controllers\ErrorHandling;
+use App\Http\Controllers\Utils;
 use App\Http\PublicClass\SqlList;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -101,7 +102,14 @@ class CompressSql extends Model
     public static function compress_delete($compressId)
     {
         try {
-            return self::where('compressId', $compressId)->delete();
+            // 删除漫画转换文件 添加正则匹配判断
+            $info = self::find($compressId);
+            $folder = $info->compressPath;
+            if (preg_match('/smanga_compress/', $folder)) {
+                rmdir($folder);
+            }
+
+            return $info->delete();
         } catch (\Exception $e) {
             return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }
@@ -127,7 +135,14 @@ class CompressSql extends Model
     public static function compress_delete_by_chapter($chapterId)
     {
         try {
-            return self::where('chapterId', $chapterId)->delete();
+            // 删除漫画转换文件 添加正则匹配判断
+            $info = self::where('chapterId', $chapterId);
+            $folder = $info->compressPath;
+            if (preg_match('/smanga_compress/', $folder)) {
+                Utils::delete_folder($folder);
+            }
+
+            return $info->delete();
         } catch (\Exception $e) {
             return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }
@@ -140,7 +155,16 @@ class CompressSql extends Model
     public static function compress_delete_by_manga($mangaId)
     {
         try {
-            return self::where('mangaId', $mangaId)->delete();
+            $model = self::where('mangaId', $mangaId);
+            $records = $model->get();
+            foreach ($records as $record) {
+                $folder = $record->compressPath;
+                if (preg_match('/smanga_compress/', $folder)) {
+                    Utils::delete_folder($folder);
+                }
+            }
+
+            $model->delete();
         } catch (\Exception $e) {
             return ErrorHandling::handle("转换记录删除失败.", $e->getMessage());
         }

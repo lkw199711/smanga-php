@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 17:07:22
+ * @LastEditTime: 2023-10-26 04:41:51
  * @FilePath: /php/laravel/app/Models/HistorySql.php
  */
 
@@ -52,7 +52,7 @@ class HistorySql extends Model
             ->select(DB::raw('max(history.createTime) as nearTime'))
             ->addSelect('history.historyId')
             ->addSelect('m.mangaId', 'm.mangaName', 'm.mangaCover', 'm.browseType', 'm.direction', 'm.removeFirst')
-            ->addSelect('c.chapterId', 'c.chapterName', 'c.chapterPath', 'c.chapterType')
+            ->addSelect('c.chapterId', 'c.chapterName', 'c.chapterCover', 'c.chapterPath', 'c.chapterType')
             ->where('history.userId', $userId)
             ->groupBy('history.chapterId')
             ->orderBy('nearTime')

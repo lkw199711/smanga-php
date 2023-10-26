@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-23 00:25:29
+ * @LastEditTime: 2023-10-26 05:50:31
  * @FilePath: /php/laravel/app/Http/Controllers/Chapter.php
  */
 
@@ -79,6 +79,7 @@ class Chapter extends Controller
 
         return new JsonResponse($res);
     }
+    
     /**
      * @description: 修改漫画信息
      * @param {Request} $request
@@ -103,6 +104,7 @@ class Chapter extends Controller
 
         return new JsonResponse($res);
     }
+
     /**
      * @description: 移除漫画信息
      * @param {Request} $request
@@ -122,6 +124,7 @@ class Chapter extends Controller
 
         return new JsonResponse($res);
     }
+    
     public function image_list(Request $request)
     {
         $userId = $request->post('userId');

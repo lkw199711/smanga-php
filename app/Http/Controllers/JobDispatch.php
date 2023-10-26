@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-10-23 14:38:42
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 20:21:52
+ * @LastEditTime: 2023-10-26 14:19:29
  * @FilePath: /smanga-php/app/Http/Controllers/JobDispatch.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,8 +26,6 @@ class JobDispatch extends Controller
         $dispatchSync = Utils::config_read('debug', 'dispatchSync');
         $dispatchMethod = $dispatchSync ? 'dispatchSync' : 'dispatch';
         $onQueue =  '';
-
-        // $job = new $jobName(...$jobData);
 
         switch ($jobName) {
             case 'DeletePath':

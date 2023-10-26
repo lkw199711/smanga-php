@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-18 01:56:35
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-23 20:25:12
+ * @LastEditTime: 2023-10-26 17:19:43
  * @FilePath: /php/laravel/app/Jobs/Compress.php
  */
 
@@ -60,7 +60,7 @@ class Compress implements ShouldQueue
             ->first();
 
         // 设置日期路径
-        $extractTo = self::get_cache_path($chapterInfo->chapterPath);
+        $extractTo = self::get_cache_path($chapterInfo->chapterId);
 
         $data = [
             'compressType' => $chapterInfo->chapterType,
@@ -127,14 +127,14 @@ class Compress implements ShouldQueue
             echo "error 漫画 {$chapterInfo->chapteName} 封面获取失败";
         }
 
-        Utils::socket_send_array($this->userId, 0, '解压完成', $chapterInfo->mangaName . ':\n\r' . $chapterInfo->chapterName);
+        // Utils::socket_send_array($this->userId, 0, '解压完成', $chapterInfo->mangaName . ':\n\r' . $chapterInfo->chapterName);
     }
     /**
      * @description: md5加密生成缓存路径
      * @param {*} $path
      * @return {*}
      */
-    private static function get_cache_path($path)
+    private static function get_cache_path($chapterId)
     {
         $cacheBasePath = Utils::get_env('SMANGA_COMPRESS');
 
@@ -142,10 +142,10 @@ class Compress implements ShouldQueue
         if (!$cacheBasePath) $cacheBasePath = '/data/compress';
 
         #设置日期路径
-        $date = '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
-        $md5 = md5($path);
+        // $date = '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
+        // $md5 = md5($path);
 
-        return $cacheBasePath . $date . $md5;
+        return "{$cacheBasePath}/smanga_compress_{$chapterId}";
     }
     /**
      * @description: 读取ini文件

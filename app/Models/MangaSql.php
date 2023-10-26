@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-25 01:57:23
+ * @LastEditTime: 2023-10-26 17:33:50
  * @FilePath: /php/laravel/app/Models/MangaSql.php
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -84,7 +84,7 @@ class MangaSql extends Model
      */
     public static function get_manga_info($mangaId, $userId)
     {
-        $info = self::where('mangaId', $mangaId)->first();
+        $info = self::find($mangaId);
         $meta = MetaSql::get($mangaId);
         $character = CharacterSql::get($mangaId)->list;
         $tags = MangaTagSql::get_nopage($userId, $mangaId)->list;
@@ -115,6 +115,7 @@ class MangaSql extends Model
 
         return new SqlList($list, $count);
     }
+
     /**
      * @description: 无限制获取漫画列表
      * @param {*} $page
@@ -130,6 +131,7 @@ class MangaSql extends Model
         });
         return new SqlList($list, $count);
     }
+
     /**
      * @description: 新增漫画
      * @param {*} $data
@@ -143,6 +145,7 @@ class MangaSql extends Model
             return ErrorHandling::handle("漫画 '{$data['mangaName']}' 插入失败。", $e->getMessage());
         }
     }
+
     /**
      * @description: 搜索漫画
      * @param {*} $keyWord
@@ -176,6 +179,7 @@ class MangaSql extends Model
 
         return new SqlList($list, $count);
     }
+
     /**
      * @description: 修改漫画信息
      * @param {*} $mangaId
@@ -185,11 +189,12 @@ class MangaSql extends Model
     public static function manga_update($mangaId, $data)
     {
         try {
-            return self::where('mangaId', $mangaId)->update($data);
+            return self::find($mangaId)->update($data);
         } catch (\Exception $e) {
             return ErrorHandling::handle("漫画 '{$mangaId}' 修改失败。", $e->getMessage());
         }
     }
+
     /**
      * @description: 移除漫画
      * @param {*} $mangaId
@@ -225,11 +230,22 @@ class MangaSql extends Model
             // 删除压缩转换记录
             CompressSql::compress_delete_by_manga($mangaId);
 
-            return self::where('mangaId', $mangaId)->delete();;
+            // 删除漫画封面 (外置) 添加正则匹配判断
+            $info = self::find($mangaId);
+            if ($info) {
+                $cover = $info->mangaCover;
+                if (preg_match('/smanga_manga/', $cover)) {
+                    unlink($cover);
+                }
+
+                return self::find($mangaId)->delete();
+            }
+            return false;
         } catch (\Exception $e) {
             return ErrorHandling::handle("漫画 '{$mangaId}' 删除失败。", $e->getMessage());
         }
     }
+
     /**
      * @description: 根据路径删除漫画
      * @param {*} $pathId

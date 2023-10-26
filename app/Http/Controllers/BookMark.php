@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 19:03:12
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-25 00:35:03
+ * @LastEditTime: 2023-10-26 04:39:09
  * @FilePath: \lar-demo\app\Http\Controllers\BookMark.php
  */
 
@@ -31,10 +31,10 @@ class BookMark extends Controller
             $sqlList = BookMarkSql::get_nopage($userId);
         }
 
-        $res = new ListResponse($sqlList->list, $sqlList->count);
+        $res = new ListResponse($sqlList->list, $sqlList->count, '书签列表获取成功');
         return new JsonResponse($res);
     }
-    
+
     public function all(Request $request)
     {
         // 接受参数
@@ -43,7 +43,7 @@ class BookMark extends Controller
         // 模型处理数据
         $sqlList = BookMarkSql::get($page, $pageSize);
 
-        $res = new ListResponse($sqlList->list, $sqlList->count);
+        $res = new ListResponse($sqlList->list, $sqlList->count, '书签列表获取成功');
         return new JsonResponse($res);
     }
 
@@ -58,7 +58,8 @@ class BookMark extends Controller
         $bookmarkPosterPath = Utils::get_env('SMANGA_BOOKMARK');
 
         // 接受参数
-        ['userId' => $userId, 'mediaId' => $mediaId, 'mangaId' => $mangaId, 'mangaName' => $mangaName, 'chapterId' => $chapterId, 'chapterPath' => $chapterPath, 'chapterName' => $chapterName, 'page' => $page, 'pageImage' => $pageImage, 'browseType' => $browseType
+        [
+            'userId' => $userId, 'mediaId' => $mediaId, 'mangaId' => $mangaId, 'mangaName' => $mangaName, 'chapterId' => $chapterId, 'chapterPath' => $chapterPath, 'chapterName' => $chapterName, 'page' => $page, 'pageImage' => $pageImage, 'browseType' => $browseType
         ] = $request->post();
 
         // 生成书签封面存放在、poster
@@ -74,7 +75,7 @@ class BookMark extends Controller
         $bookmarkInfo = BookMarkSql::add($data);
 
         $res = new InterfacesResponse($bookmarkInfo, '书签新增成功', 'bookmark add success.');
-        
+
         return new JsonResponse($res);
     }
 

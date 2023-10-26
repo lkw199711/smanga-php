@@ -336,4 +336,30 @@ class Utils extends Controller
 
         $job->$dispatchMethod();
     }
+
+    /**
+     * @description: 删除文件夹
+     * @param {*} $folderPath
+     * @return {*}
+     */
+    public static function delete_folder($folderPath)
+    {
+        if (is_dir($folderPath)) {
+            $files = scandir($folderPath);
+            foreach ($files as $file) {
+                if ($file != '.' && $file != '..') {
+                    $filePath = $folderPath . '/' . $file;
+                    if (is_dir($filePath)) {
+                        // 递归删除子文件夹
+                        self::delete_folder($filePath);
+                    } else {
+                        // 删除文件
+                        unlink($filePath);
+                    }
+                }
+            }
+            // 删除空文件夹
+            rmdir($folderPath);
+        }
+    }
 }

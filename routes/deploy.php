@@ -3,10 +3,11 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 03:02:14
+ * @LastEditTime: 2023-10-26 06:16:07
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
+use App\Models\BookMarkSql;
 use App\Models\LogSql;
 use App\Models\ScanSql;
 use Illuminate\Support\Facades\Route;
@@ -77,7 +78,12 @@ Route::any('test/scan', function () {
 
     // return '日志扫描记录成功';
 });
+Route::any('test/find', function () {
+    $res = BookMarkSql::fff(48)->delete();
 
+    dump($res);
+    // return '日志扫描记录成功';
+});
 
 Route::any('test/ajax', function () {
     // $pathId = $request->post('pathId');

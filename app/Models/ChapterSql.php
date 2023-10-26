@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-22 23:24:48
+ * @LastEditTime: 2023-10-26 17:46:58
  * @FilePath: \lar-demo\app\Models\Chapter.php
  */
 
@@ -115,6 +115,7 @@ class ChapterSql extends Model
         $orderText = self::get_order_text('name');
         return self::where('mangaId', $mangaId)->orderByRaw($orderText)->first();
     }
+
     /**
      * @description: 新增章节
      * @param {*} $data
@@ -128,6 +129,7 @@ class ChapterSql extends Model
             return ErrorHandling::handle("章节 {$data['chapterName']} 新增失败", $e->getMessage());
         }
     }
+
     /**
      * @description: 搜索章节
      * @param {*} $keyWord
@@ -156,6 +158,7 @@ class ChapterSql extends Model
 
         return new SqlList($list, $count);
     }
+
     /**
      * @description: 修改章节信息
      * @param {*} $chapterId
@@ -165,11 +168,12 @@ class ChapterSql extends Model
     public static function chapter_update($chapterId, $data)
     {
         try {
-            return self::where('chapterId', $chapterId)->update($data);
+            return self::find($chapterId)->update($data);
         } catch (\Exception $e) {
             return ErrorHandling::handle("章节 {$chapterId} 修改错误", $e->getMessage());
         }
     }
+
     /**
      * @description: 删除章节记录
      * @param {*} $chapterId
@@ -178,7 +182,6 @@ class ChapterSql extends Model
     public static function chapter_delete($chapterId, $deep = true)
     {
         try {
-            CompressSql::compress_delete_by_chapter($chapterId);
             // 相关表输出可能会与manga删除重复操作,使用deep变量区分是否需要做深度删除
             if ($deep) {
                 // 删除相关历史记录
@@ -197,13 +200,18 @@ class ChapterSql extends Model
                 CompressSql::compress_delete_by_chapter($chapterId);
             }
 
-            // 删除章节封面 (外置) 因为散图问题 暂时弃用
-            // $chapterInfo = self::where('chapterId', $chapterId)->first();
-            // if (is_file($chapterInfo->chapterCover)) {
-            //     unlink($chapterInfo->chapterCover);
-            //     // shell_exec("rm -rf \"{$chapterInfo->chapterCover}\"");
-            // }
-            return self::where('chapterId', $chapterId)->delete();
+            // 删除章节封面 (外置) 添加正则匹配判断
+            $chapterInfo = self::find($chapterId);
+            if ($chapterInfo) {
+                $cover = $chapterInfo->chapterCover;
+                if (preg_match('/smanga_chapter/', $cover)) {
+                    unlink($cover);
+                    // shell_exec("rm -rf \"{$cover}\"");
+                }
+
+                return self::find($chapterId)->delete();
+            }
+            return false;
         } catch (\Exception $e) {
             return ErrorHandling::handle("章节 {$chapterId} 删除错误", $e->getMessage());
         }
@@ -284,7 +292,7 @@ class ChapterSql extends Model
      */
     public static function chapter_info($chapterId)
     {
-        return self::where('chapterId', $chapterId)->first();
+        return self::find($chapterId);
     }
 }
 

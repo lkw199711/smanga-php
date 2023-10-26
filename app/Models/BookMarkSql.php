@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 13:40:56
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 02:48:43
+ * @LastEditTime: 2023-10-26 06:15:51
  * @FilePath: \lar-demo\app\Models\BookMark.php
  */
 
@@ -138,5 +138,10 @@ class BookMarkSql extends Model
         } catch (\Exception $e) {
             return ErrorHandling::handle('书签删除错误', $e->getMessage());
         }
+    }
+
+    public static function fff($id){
+        // return self::find($id);
+        return self::where('bookmarkId',$id)->first();
     }
 }

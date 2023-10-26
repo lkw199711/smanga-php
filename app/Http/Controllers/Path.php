@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 00:20:47
+ * @LastEditTime: 2023-10-26 13:48:20
  * @FilePath: /php/laravel/app/Http/Controllers/Path.php
  */
 
@@ -102,7 +102,7 @@ class Path extends Controller
         JobDispatch::handle('DeletePath', 'delete', $pathId);
         $sqlRes = PathSql::path_delete($pathId);
 
-        $res = new InterfacesResponse($sqlRes, '路径添加成功.', 'path add success');
+        $res = new InterfacesResponse($sqlRes, '删除任务添加成功.', 'path add success');
         return new JsonResponse($res);
     }
 

@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-09-23 11:55:31
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-23 00:35:22
+ * @LastEditTime: 2023-10-26 14:34:58
  * @FilePath: /smanga-php/app/Http/Controllers/ErrorHandling.php
  */
 
@@ -22,6 +22,7 @@ class ErrorHandling extends Controller
             'logType' => 'error',
             'logLevel' => 3,
             'logContent' => $errorLog,
+            'errorMessage' => $errorCodeLog,
         ]);
 
         // return new JsonResponse(new ErrorResponse($errorLog, $errorCodeLog));
