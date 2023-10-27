@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-25 00:59:18
+ * @LastEditTime: 2023-10-28 04:08:10
  * @FilePath: /php/laravel/app/Http/Controllers/Tag.php
  */
 
@@ -35,9 +35,11 @@ class Tag extends Controller
 
         if ($nopage) {
             $sqlList = TagSql::get_no_page($userId);
+        } else {
+            $sqlList = TagSql::get($userId, $page, $pageSize);
         }
 
-        $sqlList = TagSql::get($userId, $page, $pageSize);
+
         $res = new ListResponse($sqlList->list, $sqlList->count, '标签列表获取成功.');
         return new JsonResponse($res);
     }

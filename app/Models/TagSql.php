@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-25 01:46:54
+ * @LastEditTime: 2023-10-28 04:06:15
  * @FilePath: \lar-demo\app\Models\TagSql.php
  */
 
@@ -63,7 +63,9 @@ class TagSql extends Model
      */
     public static function get_no_page($userId)
     {
-        $list = self::whereIn('tag.userId', [$userId, 0])->get();
+        $medol = self::whereIn('userId', [$userId, 0]);
+        $toSql = $medol->toSql();
+        $list = $medol->get();
         return new SqlList($list, count($list));
     }
     /**
