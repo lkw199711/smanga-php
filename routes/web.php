@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-08 06:55:25
+ * @LastEditTime: 2023-10-28 06:39:10
  * @FilePath: \lar-demo\routes\web.php
  */
 
@@ -117,3 +117,8 @@ Route::any('test', function (Request $request) {
 Route::post('path/scan', [App\Http\Controllers\Path::class, 'scan']);
 Route::post('path/rescan', [App\Http\Controllers\Path::class, 'rescan']);
 Route::post('chapter/image', [App\Http\Controllers\Chapter::class, 'image_list']);
+
+Route::post('charts/browse', [App\Http\Controllers\Charts::class, 'browse']);
+Route::post('charts/tag_count', [App\Http\Controllers\Charts::class, 'tag_count']);
+Route::post('charts/frequency', [App\Http\Controllers\Charts::class, 'frequency']);
+Route::post('charts/ranking', [App\Http\Controllers\Charts::class, 'ranking']);
