@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-13 15:49:55
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-28 05:10:43
+ * @LastEditTime: 2023-10-28 17:48:57
  * @FilePath: \lar-demo\app\Models\MangaTagSql.php
  */
 
@@ -60,13 +60,13 @@ class MangaTagSql extends Model
         return new SqlList($list, $count);
     }
 
-    public static function count_order()
+    public static function count_order($slice)
     {
         $model = self::join('tag', 'tag.tagId', 'mangaTag.tagId')
             ->select('*', DB::raw('count(*) as num'))
             ->groupBy('mangaTag.tagId')
             ->orderBy('num', 'desc')
-            ->take(5);
+            ->take($slice);
 
         return $model->get();
     }
@@ -137,6 +137,7 @@ class MangaTagSql extends Model
             return ErrorHandling::handle("漫画关联标签删除失败.", $e->getMessage());
         }
     }
+    
     /**
      * @description: 获取漫画相应的
      * @param {*} $userrId

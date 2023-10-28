@@ -1,4 +1,11 @@
 <?php
+/*
+ * @Author: lkw199711 lkw199711@163.com
+ * @Date: 2023-10-28 17:44:05
+ * @LastEditors: lkw199711 lkw199711@163.com
+ * @LastEditTime: 2023-10-28 18:01:54
+ * @FilePath: /smanga-php/app/Http/Controllers/Charts.php
+ */
 
 
 namespace App\Http\Controllers;
@@ -23,10 +30,10 @@ class Charts extends Controller
         return new JsonResponse($res);
     }
 
-    public function tag_count()
+    public function tag_count(Request $request)
     {
-        $list = MangaTagSql::count_order();
-        // $list1  = array_slice($list->items, 0, 5);
+        $slice = $request->post('slice');
+        $list = MangaTagSql::count_order($slice);
         $res = new InterfacesResponse($list, '', '');
         return new JsonResponse($res);
     }
@@ -34,7 +41,8 @@ class Charts extends Controller
     public function frequency(Request $request)
     {
         $userId = $request->post('userId');
-        $list = HistorySql::frequency($userId);
+        $slice = $request->post('slice');
+        $list = HistorySql::frequency($userId, $slice);
         $res = new InterfacesResponse($list, '', '');
         return new JsonResponse($res);
     }
@@ -42,9 +50,9 @@ class Charts extends Controller
     public function ranking(Request $request)
     {
         $userId = $request->post('userId');
-        $list = HistorySql::ranking($userId);
+        $slice = $request->post('slice');
+        $list = HistorySql::ranking($slice);
         $res = new InterfacesResponse($list, '', '');
         return new JsonResponse($res);
     }
-    
 }

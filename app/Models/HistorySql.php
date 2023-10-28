@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-13 20:17:40
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-28 06:37:04
+ * @LastEditTime: 2023-10-28 18:02:07
  * @FilePath: /php/laravel/app/Models/HistorySql.php
  */
 
@@ -152,25 +152,25 @@ class HistorySql extends Model
         }
     }
 
-    public static function ranking($userId)
+    public static function ranking($slice)
     {
         $model = self::join('manga', 'manga.mangaId', 'history.mangaId')
             ->select('*', DB::raw('COUNT(*) as num'))
             ->groupBy('history.mangaId')
             ->orderBy('num', 'desc')
-            ->take(5);
+            ->take($slice);
 
         return $model->get();
     }
 
-    public static function frequency($userId)
+    public static function frequency($userId, $slice)
     {
         $model = self
             ::select('*', DB::raw('DATE(createTime) as date, COUNT(*) as num'))
             ->where('userId', $userId)
             ->groupBy('date')
             ->orderBy('date')
-            ->take(7);
+            ->take($slice);
 
         return $model->get();
     }
