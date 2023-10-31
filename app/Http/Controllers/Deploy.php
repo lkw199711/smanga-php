@@ -907,7 +907,13 @@ class Deploy extends Controller
             ]);
         }
 
-
+        if (array_search('3.6.0', $vers) === false) {
+            VersionSql::add([
+                'version' => '3.6.0',
+                'versionDescribe' => '封面图片缓存,添加骨架屏动画.',
+                'createTime' => '2023-11-01 01:08:17'
+            ]);
+        }
         // 有此文件说明并非初次部署
         Utils::write_txt("$configPath/install.lock", 'success');
 
