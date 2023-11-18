@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-05-04 20:56:21
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-28 06:39:10
+ * @LastEditTime: 2023-11-19 02:01:58
  * @FilePath: \lar-demo\routes\web.php
  */
 
@@ -107,6 +107,8 @@ Route::post('serve/imagick/set', [App\Http\Controllers\ServeSetting::class, 'ima
 Route::post('serve/daemon/get', [App\Http\Controllers\ServeSetting::class, 'daemon_get']);
 Route::post('serve/daemon/set', [App\Http\Controllers\ServeSetting::class, 'daemon_set']);
 
+Route::post('jobs/get', [App\Http\Controllers\Jobs::class, 'get']);
+Route::post('jobs/delete', [App\Http\Controllers\Jobs::class, 'delete']);
 
 Route::any('test', function (Request $request) {
     // $pathId = $request->post('pathId');

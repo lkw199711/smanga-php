@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 03:04:27
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 19:51:53
+ * @LastEditTime: 2023-11-19 02:05:11
  * @FilePath: /php/laravel/app/Http/Controllers/Compress.php
  */
 
@@ -68,7 +68,7 @@ class Compress extends Controller
     {
         $compressId = $request->post('compressId');
         $sqlRes = CompressSql::compress_delete($compressId);
-        $res = new InterfacesResponse($sqlRes, '解压记录添加成功.', 'comporess add success.');
+        $res = new InterfacesResponse($sqlRes, '解压记录删除成功.', 'comporess delete success.');
         return new JsonResponse($res);
     }
 }
