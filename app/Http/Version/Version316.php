@@ -3,7 +3,7 @@
 * @Author: lkw199711 lkw199711@163.com
 * @Date: 2023-11-19 23:23:36
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-11-20 00:25:15
+ * @LastEditTime: 2023-12-01 23:12:47
 * @FilePath: /smanga-php/app/Http/Version/Version316.php
 */
 
@@ -20,10 +20,9 @@ class Version316
 {
     public function __construct()
     {
-        DB::statement("ALTER TABLE user ADD `mediaLimit` varchar(191);
-            ALTER TABLE user ADD `editMedia` int(1) DEFAULT 1;
-            ALTER TABLE user ADD `editUser` int(1) DEFAULT 1;
-        ");
+        DB::statement("ALTER TABLE user ADD `mediaLimit` varchar(191);");
+        DB::statement("ALTER TABLE user ADD `editMedia` int(1) DEFAULT 1;");
+        DB::statement("ALTER TABLE user ADD `editUser` int(1) DEFAULT 1;");
 
         VersionSql::add([
             'version' => '3.1.6',
