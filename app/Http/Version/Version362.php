@@ -3,7 +3,7 @@
 * @Author: lkw199711 lkw199711@163.com
 * @Date: 2023-11-19 23:23:36
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-12-03 16:34:41
+ * @LastEditTime: 2023-12-03 18:00:31
 * @FilePath: /smanga-php/app/Http/Version/Version361.php
 */
 
@@ -15,7 +15,7 @@ use App\Models\VersionSql;
  * @description: sql模型返回数据用
  * @return {*}
  */
-class Version361
+class Version362
 {
     public function __construct()
     {
