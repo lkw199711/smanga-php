@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-20 01:43:27
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-08-26 07:49:50
+ * @LastEditTime: 2023-12-03 17:13:02
  * @FilePath: /php/laravel/app/Console/Commands/Daemon.php
  */
 
@@ -59,12 +59,6 @@ class Daemon extends Command
 
         // 死循环进程
         while (true) {
-            // 输出时间
-            echo date("Y-m-d H:i:s");
-            echo "\n\r";
-
-
-
             $configPath = Utils::get_env('SMANGA_CONFIG');
             $installLock = "$configPath/install.lock";
             $AppPath = Utils::get_env('SMANGA_APP');
@@ -78,7 +72,6 @@ class Daemon extends Command
 
             // 检查更新部署状态
             if (!is_file($versionFile)) {
-                echo '执行更新部署\r\n';
                 $ip = Utils::config_read('sql', 'ip');
                 $userName = Utils::config_read('sql', 'userName');
                 $passWord = Utils::config_read('sql', 'passWord');
@@ -92,11 +85,8 @@ class Daemon extends Command
                     Deploy::database_init(new Request());
 
                     $link->close();
-
-                    echo "error sql connect success\r\n";
                 } catch (\Exception $e) {
                     $msg = $e->getMessage();
-                    echo "error sql connect failed $msg\r\n";
                 }
 
                 sleep(10);
@@ -201,7 +191,7 @@ class Daemon extends Command
         $AppPath = Utils::get_env('SMANGA_APP');
         $configPath = Utils::get_env('SMANGA_CONFIG');
         $supervisorConfigPath = "$configPath/auto-scan";
-        // echo $AppPath;exit;
+
         foreach ($pathArr as $val) {
             $path = $val->path;
             $md5 = md5($val->path);
