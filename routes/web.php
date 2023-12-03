@@ -124,3 +124,7 @@ Route::post('charts/browse', [App\Http\Controllers\Charts::class, 'browse']);
 Route::post('charts/tag_count', [App\Http\Controllers\Charts::class, 'tag_count']);
 Route::post('charts/frequency', [App\Http\Controllers\Charts::class, 'frequency']);
 Route::post('charts/ranking', [App\Http\Controllers\Charts::class, 'ranking']);
+
+// 设置ssl证书
+Route::post('deploy/set_ssl', [App\Http\Controllers\Deploy::class, 'set_ssl']);
+Route::post('deploy/reset_ssl', [App\Http\Controllers\Deploy::class, 'reset_ssl']);

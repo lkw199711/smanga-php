@@ -134,7 +134,7 @@ class Deploy extends Controller
             '3.3.0', '3.3.1', '3.3.2', '3.3.3', '3.3.4', '3.3.7', '3.3.8', '3.3.9',
             '3.4.0', '3.4.1', '3.4.2', '3.4.3', '3.4.4', '3.4.5', '3.4.6', '3.4.7', '3.4.8', '3.4.9',
             '3.5.0', '3.5.1', '3.5.2', '3.5.3', '3.5.4', '3.5.5', '3.5.7', '3.6.0',
-            '3.6.1'
+            '3.6.1', '3.6.2'
         ];
 
         $version = VersionSql::list();
@@ -178,4 +178,123 @@ class Deploy extends Controller
         $res = new InterfacesResponse($vers, '初始化成功!','smanga init successed.');
         return new JsonResponse($res);
     }
+
+    /**
+     * @description: ssl证书设置
+     * @param {Request} $request
+     * @return {*}
+     */    
+    public static function reset_ssl(){
+        $nginxConfig = <<<NGINX
+        server {
+            listen 443 default_server;
+            listen [::]:443 default_server;
+
+            root /app;
+            index index.html index.php;
+
+            location / {
+                    try_files \$uri \$uri/ /index.php?\$query_string;
+            }
+
+            location /websocket {
+                    proxy_pass http://127.0.0.1:9501;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection "upgrade";
+            }
+
+            location ~ \.php(.*)$ {
+                    fastcgi_pass   unix:/run/php/php-fpm.sock;
+                    fastcgi_index  index.php;
+                    fastcgi_param  SCRIPT_FILENAME  /app/\$fastcgi_script_name;
+                    include        fastcgi_params;
+            }
+
+            # You may need this to prevent return 404 recursion.
+            location = /404.html {
+                    internal;
+            }
+        }
+        NGINX;
+        // 将配置写入文件
+        file_put_contents('/etc/nginx/conf.d/ssl.conf', $nginxConfig);
+
+        // 重载nginx
+        shell_exec('nginx -s reload');
+
+        // 输出结果
+        $res = new InterfacesResponse('','ssl证书重置成功','ssl reset success');
+        return new JsonResponse($res);
+    }
+
+    /**
+     * @description: ssl证书设置
+     * @param {Request} $request
+     * @return {*}
+     */
+    public static function set_ssl(Request $request)
+    {
+        // 获取 PEM 和 KEY 文件路径
+        $pemPath = $request->get('pem');
+        $keyPath = $request->get('key');
+
+        // 检查文件路径是否有效，省略了错误处理，请根据实际需要添加错误处理逻辑
+        if (!file_exists($pemPath) || !file_exists($keyPath)) {
+            $res = new InterfacesResponse('', '证书文件路径无效', 'Invalid certificate file paths');
+            return new JsonResponse($res);
+        }
+
+        // 读取 PEM 和 KEY 文件内容
+        $pemContent = file_get_contents($pemPath);
+        $keyContent = file_get_contents($keyPath);
+
+        // 生成 Nginx 配置
+        $nginxConfig = <<<NGINX
+        server {
+            listen 443 ssl default_server;
+            listen [::]:443 ssl default_server;
+
+            ssl_certificate $pemPath;
+            ssl_certificate_key $keyPath;
+
+            root /app;
+            index index.html index.php;
+
+            location / {
+                try_files \$uri \$uri/ /index.php?\$query_string;
+            }
+
+            location /websocket {
+                proxy_pass http://127.0.0.1:9501;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade \$http_upgrade;
+                proxy_set_header Connection "upgrade";
+            }
+
+            location ~ \.php(.*)$ {
+                fastcgi_pass   unix:/run/php/php-fpm.sock;
+                fastcgi_index  index.php;
+                fastcgi_param  SCRIPT_FILENAME  /app/\$fastcgi_script_name;
+                include        fastcgi_params;
+            }
+
+            # You may need this to prevent return 404 recursion.
+            location = /404.html {
+                internal;
+            }
+        }
+        NGINX;
+
+        // 将配置写入文件
+        file_put_contents('/etc/nginx/conf.d/ssl.conf', $nginxConfig);
+
+        // 重载nginx
+        shell_exec('nginx -s reload');
+
+        // 输出结果
+        $res = new InterfacesResponse('', 'SSL证书设置成功', 'SSL set success');
+        return new JsonResponse($res);
+    }
+
 }

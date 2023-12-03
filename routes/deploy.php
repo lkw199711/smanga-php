@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-11-20 00:04:00
+ * @LastEditTime: 2023-12-02 21:42:42
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
@@ -80,23 +80,4 @@ Route::any('test/scan', function () {
     // return '日志扫描记录成功';
 });
 
-Route::any('test/iiii', function () {
-    /*
-    $link = @mysqli_connect('192.168.5.36', 'root', 'q', 'smanga', '3306')
-        or die(json_encode([
-            'code' => 1,
-            'initCode' => 0,
-            'message' => '数据库链接错误',
-        ]));
-
-    // 设置默认字符集
-    $link->set_charset('utf8mb4');
-    // 切换当前数据库
-    $link->query('use smanga;');
-    */
-    $version = '314';
-    $className = "App\Http\Version\Version{$version}";
-    $instance = new $className();
-    // $instance->
-    return '日志添加成功';
-});
+Route::any('test/iiii', [App\Http\Controllers\Deploy::class, 'set_ssl']);
