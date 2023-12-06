@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-10-12 23:32:56
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-23 14:21:49
+ * @LastEditTime: 2023-12-06 23:03:08
  * @FilePath: /smanga-php/app/Http/Controllers/Utils.php
  */
 
@@ -360,6 +360,31 @@ class Utils extends Controller
             }
             // 删除空文件夹
             rmdir($folderPath);
+        }
+    }
+
+    /**
+     * @description: 压缩图片至指定尺寸
+     * @param {*} $imagePath
+     * @return {*}
+     */    
+    public static function compress_pictures($imagePath){
+        // 保存至源文件覆盖 不需要
+        // $imagePath = 'output_compressed.jpg';  // 输出压缩后的图片路径
+        
+        $targetFileSize = self::config_read('poster', 'size') * 1024;  // 目标文件大小（300 KB）
+
+        // 获取输入图片的文件大小
+        $fileSize = filesize($imagePath);
+
+        if ($fileSize > $targetFileSize) {
+            // 图片大小超过目标大小，进行压缩
+            $command = "convert $imagePath -define jpeg:extent={$targetFileSize}B {$imagePath}";
+            exec($command);
+
+            return true;
+        } else {
+            return false;
         }
     }
 }

@@ -45,6 +45,12 @@ class Deploy extends Controller
             'port' => Utils::config_read('sql', 'port'),
         ];
     }
+
+    /**
+     * @description: 设置数据链接
+     * @param {Request} $request
+     * @return {*}
+     */
     public static function database_set(Request $request)
     {
         $ip = $request->post('ip');
@@ -77,6 +83,12 @@ class Deploy extends Controller
             return new ErrorResponse('数据库链接错误', 'database link error.', $e->getMessage());
         }
     }
+
+    /**
+     * @description: 数据库初始化
+     * @param {Request} $request
+     * @return {*}
+     */
     public static function database_init(Request $request)
     {
         $configPath = Utils::get_env('SMANGA_CONFIG');
@@ -98,11 +110,12 @@ class Deploy extends Controller
             $database = 'smanga';
             Utils::config_write('sql', 'database', $database);
         }
-
-        // 3.3.3 新增定时扫描间隔
-        if (!Utils::config_read('scan', 'interval ')) {
-            Utils::config_write('scan', 'interval', 1 * 24 * 60 * 60);
-        }
+        
+        // 初始化设置值
+        // 自动扫描间隔
+        self::attribute_init('scan', 'interval', 1 * 24 * 60 * 60);
+        // 封面压缩大小
+        self::attribute_init('poster', 'size', 100);
 
         // 将原有的config数据库设置写入 env
         Utils::update_env([
@@ -134,7 +147,7 @@ class Deploy extends Controller
             '3.3.0', '3.3.1', '3.3.2', '3.3.3', '3.3.4', '3.3.7', '3.3.8', '3.3.9',
             '3.4.0', '3.4.1', '3.4.2', '3.4.3', '3.4.4', '3.4.5', '3.4.6', '3.4.7', '3.4.8', '3.4.9',
             '3.5.0', '3.5.1', '3.5.2', '3.5.3', '3.5.4', '3.5.5', '3.5.7', '3.6.0',
-            '3.6.1', '3.6.2'
+            '3.6.1', '3.6.2', '3.6.3'
         ];
 
         $version = VersionSql::list();
@@ -175,7 +188,7 @@ class Deploy extends Controller
         // 重启守护进程与队列服务
         shell_exec('supervisorctl restart all');
 
-        $res = new InterfacesResponse($vers, '初始化成功!','smanga init successed.');
+        $res = new InterfacesResponse($vers, '初始化成功!', 'smanga init successed.');
         return new JsonResponse($res);
     }
 
@@ -183,8 +196,9 @@ class Deploy extends Controller
      * @description: ssl证书设置
      * @param {Request} $request
      * @return {*}
-     */    
-    public static function reset_ssl(){
+     */
+    public static function reset_ssl()
+    {
         $nginxConfig = <<<NGINX
         server {
             listen 443 default_server;
@@ -224,7 +238,7 @@ class Deploy extends Controller
         shell_exec('nginx -s reload');
 
         // 输出结果
-        $res = new InterfacesResponse('','ssl证书重置成功','ssl reset success');
+        $res = new InterfacesResponse('', 'ssl证书重置成功', 'ssl reset success');
         return new JsonResponse($res);
     }
 
@@ -296,5 +310,21 @@ class Deploy extends Controller
         $res = new InterfacesResponse('', 'SSL证书设置成功', 'SSL set success');
         return new JsonResponse($res);
     }
+    
+    /**
+     * @description: 写入属性默认值
+     * @param {*} $title
+     * @param {*} $key
+     * @param {*} $value
+     * @return {*}
+     */
+    public static function attribute_init($title, $key, $value)
+    {
+        if (!Utils::config_read($title, $key)) {
+            Utils::config_write($title, $key, $value);
+            return true;
+        }
 
+        return false;
+    }
 }

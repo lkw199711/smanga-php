@@ -3,7 +3,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-19 22:11:32
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-12-02 21:42:42
+ * @LastEditTime: 2023-12-06 22:53:38
  * @FilePath: /php/laravel/routes/deploy.php
  */
 
@@ -81,3 +81,35 @@ Route::any('test/scan', function () {
 });
 
 Route::any('test/iiii', [App\Http\Controllers\Deploy::class, 'set_ssl']);
+
+Route::any('test/ccc',function(){
+    $inputImagePath = '/0docker/1localhost/poster/smanga_chapter_19665.png';  // 输入图片路径
+    $inputImagePath = '/0docker/1localhost/test/10.jpg';  // 输入图片路径
+    $outputImagePath = '/0docker/1localhost/poster/smanga_chapter_11.jpg';  // 输出压缩后的图片路径
+    $targetFileSize = 300;  // 目标文件大小（KB）
+
+    // // 使用 convert 命令压缩图片到指定大小
+    // $command = "convert $inputImagePath -define jpeg:extent={$targetFileSize}KB $outputImagePath";
+    // exec($command);
+
+    // echo '图片已压缩完成。';
+
+    // $targetFileSize = 300 * 1024;  // 目标文件大小（300 KB）
+
+    // 获取输入图片的文件大小
+    $fileSize = filesize($inputImagePath);
+
+    if ($fileSize > $targetFileSize) {
+        // 图片大小超过目标大小，进行压缩
+        $command = "convert $inputImagePath -define jpeg:extent={$targetFileSize}KB $outputImagePath";
+        exec($command);
+
+        echo '图片已压缩完成。';
+    } else {
+        // 图片已经小于或等于目标大小，无需压缩
+        echo '图片已经符合目标大小，无需压缩。';
+    }
+
+
+    // return Utils::compress_pictures('/0docker/1localhost/poster/smanga_chapter_1.png');
+});

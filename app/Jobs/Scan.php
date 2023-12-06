@@ -3,12 +3,13 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-05-16 23:33:11
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-10-24 01:11:20
+ * @LastEditTime: 2023-12-06 22:13:39
  * @FilePath: /php/laravel/app/Jobs/Scan.php
  */
 
 namespace App\Jobs;
 
+use App\Http\Controllers\JobDispatch;
 use App\Http\Controllers\Utils;
 use App\Models\ChapterSql;
 use App\Models\LogSql;
@@ -128,14 +129,8 @@ class Scan implements ShouldQueue
             self::scan_end();
         } else {
             // 正常扫描
-            $dispatchSync = Utils::config_read('debug', 'dispatchSync');
-
             for ($i = 0, $length = count($mangaList); $i < $length; $i++) {
-                if ($dispatchSync) {
-                    ScanManga::dispatchSync($this->pathInfo, $mangaList[$i], $length, $i + 1);
-                } else {
-                    ScanManga::dispatch($this->pathInfo, $mangaList[$i], $length, $i + 1)->onQueue('scan');
-                }
+                JobDispatch::handle('ScanManga', 'scan', $this->pathInfo, $mangaList[$i], $length, $i + 1);
             }
         }
     }

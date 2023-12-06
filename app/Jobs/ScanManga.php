@@ -487,7 +487,7 @@ class ScanManga implements ShouldQueue
         $posterPath = Utils::get_env('SMANGA_POSTER');
         if (!$posterPath) $posterPath = '/data/poster';
         // 为防止rar包内默认的文件名与chapterId重名,加入特定前缀
-        $copyPoster = "{$posterPath}/smanga_chapter_{$this->chapterId}.png";
+        $copyPoster = "{$posterPath}/smanga_chapter_{$this->chapterId}.jpg";
 
         $extensions = ['.png', '.PNG', '.jpg', '.jpeg', '.JPG', '.webp', '.WEBP'];
         foreach ($extensions as $extension) {
@@ -508,11 +508,11 @@ class ScanManga implements ShouldQueue
             }
 
             if ($type === 'rar') {
-                UnCompressTools::ext_rar($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
+                UnCompressTools::ext_rar($path, $posterPath, "smanga_chapter_{$this->chapterId}.jpg");
             }
 
             if ($type === '7z') {
-                UnCompressTools::ext_7z($path, $posterPath, "smanga_chapter_{$this->chapterId}.png");
+                UnCompressTools::ext_7z($path, $posterPath, "smanga_chapter_{$this->chapterId}.jpg");
             }
         } else {
             copy($poster, $copyPoster);
@@ -522,7 +522,7 @@ class ScanManga implements ShouldQueue
         if (is_file($copyPoster)) {
             ChapterSql::chapter_update($this->chapterId, ['chapterCover' => $copyPoster]);
             // 与漫画区分,新增漫画封面命名
-            $copyMangaPoster = "{$posterPath}/smanga_manga_{$this->mangaId}.png";
+            $copyMangaPoster = "{$posterPath}/smanga_manga_{$this->mangaId}.jpg";
 
             if (!$this->mangaCover) {
                 $sidePic = self::side_pic($this->mangaPath);
@@ -535,6 +535,10 @@ class ScanManga implements ShouldQueue
 
                 MangaSql::manga_update($this->mangaId, ['mangaCover' => $this->mangaCover]);
             }
+
+            // 压缩封面
+            Utils::compress_pictures($copyPoster);
+            Utils::compress_pictures($this->mangaCover);
         } else {
             ErrorHandling::handle("漫画 {$this->mangaId} 获取封面失败");
             return false;
