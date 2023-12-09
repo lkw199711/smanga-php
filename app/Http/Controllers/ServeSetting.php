@@ -26,7 +26,10 @@ class ServeSetting extends Controller
 
         $data = [
             'interval' => Utils::config_read('scan', 'interval'),
-            'autoCompress' => Utils::config_read('scan', 'autoCompress')
+            'autoCompress' => Utils::config_read('scan', 'autoCompress'),
+            'pem' => Utils::config_read('ssl', 'pem'),
+            'key' => Utils::config_read('ssl', 'key'),
+            'posterSize' => Utils::config_read('poster', 'size'),
         ];
 
         $res = new InterfacesResponse($data,'', 'get server setting success.');

@@ -110,12 +110,6 @@ class Deploy extends Controller
             $database = 'smanga';
             Utils::config_write('sql', 'database', $database);
         }
-        
-        // 初始化设置值
-        // 自动扫描间隔
-        self::attribute_init('scan', 'interval', 1 * 24 * 60 * 60);
-        // 封面压缩大小
-        self::attribute_init('poster', 'size', 100);
 
         // 将原有的config数据库设置写入 env
         Utils::update_env([
@@ -237,6 +231,10 @@ class Deploy extends Controller
         // 重载nginx
         shell_exec('nginx -s reload');
 
+        // 将ini设置置空
+        Utils::config_write('ssl','pem','');
+        Utils::config_write('ssl','key','');
+
         // 输出结果
         $res = new InterfacesResponse('', 'ssl证书重置成功', 'ssl reset success');
         return new JsonResponse($res);
@@ -262,6 +260,10 @@ class Deploy extends Controller
         // 读取 PEM 和 KEY 文件内容
         $pemContent = file_get_contents($pemPath);
         $keyContent = file_get_contents($keyPath);
+
+        // 写入ini
+        Utils::config_write('ssl','pem',$pemPath);
+        Utils::config_write('ssl','key',$keyPath);
 
         // 生成 Nginx 配置
         $nginxConfig = <<<NGINX
@@ -309,22 +311,5 @@ class Deploy extends Controller
         // 输出结果
         $res = new InterfacesResponse('', 'SSL证书设置成功', 'SSL set success');
         return new JsonResponse($res);
-    }
-    
-    /**
-     * @description: 写入属性默认值
-     * @param {*} $title
-     * @param {*} $key
-     * @param {*} $value
-     * @return {*}
-     */
-    public static function attribute_init($title, $key, $value)
-    {
-        if (!Utils::config_read($title, $key)) {
-            Utils::config_write($title, $key, $value);
-            return true;
-        }
-
-        return false;
     }
 }

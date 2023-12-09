@@ -3,7 +3,7 @@
  * @Author: lkw199711 lkw199711@163.com
  * @Date: 2023-10-12 23:32:56
  * @LastEditors: lkw199711 lkw199711@163.com
- * @LastEditTime: 2023-12-06 23:03:08
+ * @LastEditTime: 2023-12-06 23:54:40
  * @FilePath: /smanga-php/app/Http/Controllers/Utils.php
  */
 
@@ -386,5 +386,22 @@ class Utils extends Controller
         } else {
             return false;
         }
+    }
+
+    /**
+     * @description: 写入属性默认值
+     * @param {*} $title
+     * @param {*} $key
+     * @param {*} $value
+     * @return {*}
+     */
+    public static function attribute_init($title, $key, $value)
+    {
+        if (!self::config_read($title, $key)) {
+            self::config_write($title, $key, $value);
+            return true;
+        }
+
+        return false;
     }
 }
