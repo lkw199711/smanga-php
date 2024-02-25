@@ -101,6 +101,9 @@ class Daemon extends Command
             // 定时扫描
             self::auto_scan();
 
+            // 删除解压文件
+            self::compress_delete();
+
             // 循环次数增加
             $loopNum++;
 
@@ -242,5 +245,19 @@ class Daemon extends Command
         }
 
         return $interval;
+    }
+    /**
+     * 删除压缩文件
+     */
+    private static function compress_delete(){
+        $saveDuration = (int)Utils::config_read('compress', 'saveDuration');
+        
+        // 如果为0 不进行删除
+        if(!$saveDuration || $saveDuration==0) return;
+
+        $records = DB::table('compress')->where('updateTime','<',Carbon::now()->subDays($saveDuration))->get();
+        foreach ($records as $key => $value) {
+            CompressSql::compress_delete($value->compressId);
+        }
     }
 }

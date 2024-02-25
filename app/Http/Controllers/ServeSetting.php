@@ -30,6 +30,7 @@ class ServeSetting extends Controller
             'pem' => Utils::config_read('ssl', 'pem'),
             'key' => Utils::config_read('ssl', 'key'),
             'posterSize' => Utils::config_read('poster', 'size'),
+            'saveDuration' => Utils::config_read('compress', 'saveDuration'),
         ];
 
         $res = new InterfacesResponse($data,'', 'get server setting success.');

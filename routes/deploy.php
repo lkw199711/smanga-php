@@ -12,6 +12,7 @@ use App\Models\LogSql;
 use App\Models\MangaTagSql;
 use App\Models\ScanSql;
 use Illuminate\Support\Facades\Route;
+use Carbon\Carbon;
 
 Route::post('deploy/database-test', [App\Http\Controllers\Deploy::class, 'database_test']);
 Route::post('deploy/database-get', [App\Http\Controllers\Deploy::class, 'database_get']);
@@ -112,4 +113,13 @@ Route::any('test/ccc',function(){
 
 
     // return Utils::compress_pictures('/0docker/1localhost/poster/smanga_chapter_1.png');
+});
+
+Route::any('test/c1',function(){
+    $records = DB::table('compress')->where('updateTime','<',Carbon::now()->subDays(60))->get();
+    foreach ($records as $key => $value) {
+        echo $value->compressId;
+        echo "<br>";
+    }
+    // dump($records);
 });
