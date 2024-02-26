@@ -8,6 +8,7 @@
  */
 
 use App\Models\BookMarkSql;
+use App\Models\CompressSql;
 use App\Models\LogSql;
 use App\Models\MangaTagSql;
 use App\Models\ScanSql;
@@ -127,4 +128,10 @@ Route::any('test/c1',function(){
 Route::any('test/bool', function () {
     
     dump(!!'0');
+});
+
+Route::any('test/dc', function () {
+    $res = CompressSql::compress_delete(275);
+    // $res = CompressSql::find(273);
+dump($res);
 });

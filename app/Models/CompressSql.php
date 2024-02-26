@@ -106,7 +106,7 @@ class CompressSql extends Model
             $info = self::find($compressId);
             $folder = $info->compressPath;
             if (preg_match('/smanga_compress/', $folder)) {
-                rmdir($folder);
+                Utils::delete_folder($folder);
             }
 
             return $info->delete();
