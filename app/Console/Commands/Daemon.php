@@ -10,8 +10,10 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\Deploy;
+use App\Http\Controllers\JobDispatch;
 use App\Http\Controllers\Utils;
 use App\Jobs\Scan;
+use App\Models\CompressSql as ModelsCompressSql;
 use App\Models\ScanSql;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
@@ -168,17 +170,10 @@ class Daemon extends Command
 
             // 计算时间差（以分钟为单位）
             $timeDifference = $currentDateTime->diffInSeconds($previousDateTime);
-            
+
             // 检查时间差是否超过间隔（以秒为单位）
             if ($timeDifference > $interval) { // 十分钟等于 10 * 60 = 600 秒
-                // 调试模式下同步运行
-                $dispatchSync = Utils::config_read('debug', 'dispatchSync');
-
-                if ($dispatchSync) {
-                    Scan::dispatchSync($val->pathId);
-                } else {
-                    Scan::dispatch($val->pathId)->onQueue('scan');
-                }
+                JobDispatch::handle('Scan','scan', $val->pathId);
             }
         }
     }
@@ -249,15 +244,17 @@ class Daemon extends Command
     /**
      * 删除压缩文件
      */
-    private static function compress_delete(){
+    private static function compress_delete()
+    {
         $saveDuration = (int)Utils::config_read('compress', 'saveDuration');
-        
-        // 如果为0 不进行删除
-        if(!$saveDuration || $saveDuration==0) return;
 
-        $records = DB::table('compress')->where('updateTime','<',Carbon::now()->subDays($saveDuration))->get();
+        // 如果为0 不进行删除
+        if (!$saveDuration || $saveDuration == 0) return;
+
+        $records = DB::table('compress')->where('updateTime', '<', Carbon::now()->subDays($saveDuration))->get();
+
         foreach ($records as $key => $value) {
-            CompressSql::compress_delete($value->compressId);
+            ModelsCompressSql::compress_delete($value->compressId);
         }
     }
 }

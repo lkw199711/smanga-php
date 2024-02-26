@@ -12,6 +12,7 @@ namespace App\Models;
 use App\Http\Controllers\ErrorHandling;
 use App\Http\Controllers\JobDispatch;
 use App\Http\PublicClass\SqlList;
+use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -120,6 +121,14 @@ class PathSql extends Model
     {
         try {
             return self::where('pathId', $pathId)->update(['lastScanTime' => $lastScanTime]);
+        } catch (\Exception $e) {
+            ErrorHandling::handle("路径 '{$pathId}' 更新扫描时间失败。", $e->getMessage());
+        }
+    }
+
+    public static function path_update_scan_time_now($pathId){
+        try {
+            return self::where('pathId', $pathId)->update(['lastScanTime' => Carbon::now()]);
         } catch (\Exception $e) {
             ErrorHandling::handle("路径 '{$pathId}' 更新扫描时间失败。", $e->getMessage());
         }

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\ErrorHandling;
+use App\Http\Controllers\JobDispatch;
 use App\Http\Controllers\UnCompressTools;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -19,6 +20,7 @@ use App\Models\ScanSql;
 use App\Models\MangaSql;
 use App\Models\MangaTagSql;
 use App\Models\MetaSql;
+use App\Models\PathSql;
 use App\Models\TagSql;
 
 class ScanManga implements ShouldQueue
@@ -94,6 +96,9 @@ class ScanManga implements ShouldQueue
                 return false;
             }
         }
+
+        // 更新路径扫描时间
+        PathSql::path_update_scan_time_now($this->pathId);
 
         // 更新扫描记录-进行中
         ScanSql::scan_update($this->pathId, [
@@ -248,13 +253,7 @@ class ScanManga implements ShouldQueue
                         // 是否自动解压的配置项
                         $autoCompress = Utils::config_read('scan', 'autoCompress');
                         if ($autoCompress) {
-                            // 调试模式下同步运行
-                            $dispatchSync = Utils::config_read('debug', 'dispatchSync');
-                            if ($dispatchSync) {
-                                Compress::dispatchSync(0, $chapterId);
-                            } else {
-                                Compress::dispatch(0, $chapterId)->onQueue('compress');
-                            }
+                            JobDispatch::handle('Compress','compress', $chapterId);
                         }
                     }
                 }

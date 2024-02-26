@@ -123,3 +123,8 @@ Route::any('test/c1',function(){
     }
     // dump($records);
 });
+
+Route::any('test/bool', function () {
+    
+    dump(!!'0');
+});

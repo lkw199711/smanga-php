@@ -246,6 +246,8 @@ class Scan implements ShouldQueue
      */
     private function scan_start()
     {
+        // 更新最新扫描时间
+        PathSql::path_update_scan_time_now($this->pathId);
         // 插入扫描记录
         ScanSql::add([
             'scanStatus' => 'start',
