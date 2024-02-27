@@ -9,6 +9,7 @@
 
 namespace App\Http\Version;
 
+use App\Http\Controllers\Utils;
 use App\Models\VersionSql;
 
 /**
@@ -18,7 +19,10 @@ use App\Models\VersionSql;
 class Version365
 {
     public function __construct()
-    {        
+    {
+        // 封面压缩大小
+        Utils::attribute_init('compress', 'saveDuration', 100);
+
         VersionSql::add([
             'version' => '3.6.5',
             'versionDescribe' => '新增文件保存时长设置.',

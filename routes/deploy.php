@@ -11,6 +11,7 @@ use App\Models\BookMarkSql;
 use App\Models\CompressSql;
 use App\Models\LogSql;
 use App\Models\MangaTagSql;
+use App\Models\PathSql;
 use App\Models\ScanSql;
 use Illuminate\Support\Facades\Route;
 use Carbon\Carbon;
@@ -134,4 +135,9 @@ Route::any('test/dc', function () {
     $res = CompressSql::compress_delete(275);
     // $res = CompressSql::find(273);
 dump($res);
+});
+
+Route::any('test/update-last-scan', function () {
+    $res = PathSql::path_update_scan_time_now(2);
+    dump($res);
 });
