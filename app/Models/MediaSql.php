@@ -50,7 +50,7 @@ class MediaSql extends Model
      */
     public static function get($page, $pageSize, $mediaLimit)
     {
-        $paginate = self::whereNotIn('mediaId', $mediaLimit)->paginate($pageSize, ['*'], 'page', $page);
+        $paginate = self::whereNotIn('mediaId', $mediaLimit)->orderBy('mediaId')->paginate($pageSize, ['*'], 'page', $page);
         $count = $paginate->total();
         $list = $paginate->getCollection()->transform(function ($row) {
             return $row;
@@ -65,7 +65,7 @@ class MediaSql extends Model
      */
     public static function get_nolimit($page, $pageSize)
     {
-        $paginate = self::paginate($pageSize, ['*'], 'page', $page);
+        $paginate = self::orderBy('mediaId')->paginate($pageSize, ['*'], 'page', $page);
         
         $count = $paginate->total();
         $list = $paginate->getCollection()->transform(function ($row) {

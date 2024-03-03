@@ -48,6 +48,7 @@ class BookMarkSql extends Model
         $paginate = self::join('chapter', 'chapter.chapterId', 'bookmark.chapterId')
             ->join('manga', 'manga.mangaId', 'bookmark.mangaId')
             ->where('userId', $userId)
+            ->orderBy('createTime', 'desc')
             ->paginate($pageSize, ['*'], 'page', $page);
 
         $count = $paginate->total();
@@ -140,8 +141,9 @@ class BookMarkSql extends Model
         }
     }
 
-    public static function fff($id){
+    public static function fff($id)
+    {
         // return self::find($id);
-        return self::where('bookmarkId',$id)->first();
+        return self::where('bookmarkId', $id)->first();
     }
 }
