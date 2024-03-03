@@ -144,7 +144,7 @@ class ChapterSql extends Model
         $orderText = self::get_order_text($order);
 
         $base = self::whereNotIn('mediaId', $mediaLimit)
-            ->where('chapterName', 'like', "%{$keyWord}%")
+            ->where('subTitle', 'like', "%{$keyWord}%")
             ->orderByRaw($orderText);
 
         // $sql = $base->toSql();

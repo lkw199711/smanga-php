@@ -159,7 +159,7 @@ class MangaSql extends Model
     public static function manga_search($keyWord, $mediaLimit, $order, $page, $pageSize, $userId = 0)
     {
         $orderText = self::get_order_text($order);
-        $sql = self::whereNotIn('mediaId', $mediaLimit)->where('mangaName', 'like', "%{$keyWord}%")->orderByRaw($orderText);
+        $sql = self::whereNotIn('mediaId', $mediaLimit)->where('subTitle', 'like', "%{$keyWord}%")->orderByRaw($orderText);
 
         $paginate = $sql->paginate($pageSize, ['*'], 'page', $page);
 
@@ -298,6 +298,31 @@ class MangaSql extends Model
         });
 
         return new SqlList($list, $count);
+    }
+
+    /**
+     * @description: 通过标签获取漫画
+     * @return {*}
+     */
+    public static function get_by_parent_path($parentPath, $page, $pageSize, $order)
+    {
+        $orderText = self::get_order_text($order);
+        
+        $model = self::where('parentPath', $parentPath)->orderByRaw($orderText);
+
+        $paginate = $model->paginate($pageSize, ['*'], 'page', $page);
+
+        $count = $paginate->total();
+        $list = $paginate->getCollection()->transform(function ($row) {
+            return $row;
+        });
+
+        return new SqlList($list, $count);
+    }
+
+    public static function get_sub_path($mediaId){
+        $list = self::select('parentPath')->where('mediaId', $mediaId)->groupBy('parentPath')->get();
+        return new SqlList($list, count($list));
     }
     /**
      * @description: 转换排序参数

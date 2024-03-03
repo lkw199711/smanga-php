@@ -76,7 +76,7 @@ class Path extends Controller
         }
 
         // 获取pathId
-        $pathInfo = PathSql::add(['mediaId' => $mediaId, 'path' => $path, 'autoScan' => $autoScan, 'include' => $include, 'exclude' => $exclude]);
+        $pathInfo = PathSql::add(['mediaId' => $mediaId, 'pathType'=>'main', 'path' => $path, 'autoScan' => $autoScan, 'include' => $include, 'exclude' => $exclude]);
 
         if (!$pathInfo) {
             $res = new ErrorResponse('路径添加错误', 'path add filed');

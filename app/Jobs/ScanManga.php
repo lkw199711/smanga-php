@@ -22,6 +22,7 @@ use App\Models\MangaTagSql;
 use App\Models\MetaSql;
 use App\Models\PathSql;
 use App\Models\TagSql;
+use sqhlib\Hanzi\HanziConvert;
 
 class ScanManga implements ShouldQueue
 {
@@ -46,6 +47,7 @@ class ScanManga implements ShouldQueue
     // 扫描中漫画的id信息
     private $mangaId;
     private $chapterId;
+    private $parentPath;
 
     // private $removeFirst;
     // private $removeFirst;
@@ -71,6 +73,7 @@ class ScanManga implements ShouldQueue
         $this->mangaName = $mangaItem->mangaName;
         $this->mangaPath = $mangaItem->mangaPath;
         $this->mangaType = $mangaItem->mangaType;
+        $this->parentPath = $mangaItem->parentPath;
 
         $this->scanCount = $scanCount;
         $this->scanIndex = $scanIndex;
@@ -108,6 +111,8 @@ class ScanManga implements ShouldQueue
             'scanIndex' => $this->scanIndex
         ]);
 
+        // 将标题繁简体转换后写入副标题,用于检索
+        $subTitle = HanziConvert::convert($this->mangaName).'/'. HanziConvert::convert($this->mangaName,true);
         $mangaInsert = [
             'mediaId' => $this->mediaId,
             'pathId' => $this->pathId,
@@ -116,7 +121,9 @@ class ScanManga implements ShouldQueue
             'mangaPath' => $this->mangaPath,
             'browseType' => $this->defaultBrowse,
             'direction' => $this->direction,
-            'removeFirst' => $this->removeFirst
+            'removeFirst' => $this->removeFirst,
+            'parentPath' => $this->parentPath,
+            'subTitle' => $subTitle,
         ];
 
         // 扫描元数据
@@ -147,7 +154,9 @@ class ScanManga implements ShouldQueue
 
             // 缓存mangaId
             $this->mangaId = $mangaInfo->mangaId;
-
+            
+            // 将标题繁简体转换后写入副标题,用于检索
+            $subTitle = HanziConvert::convert($this->mangaName) . '/' . HanziConvert::convert($this->mangaName, true);
             $chapterData = [
                 'mangaId' => $mangaInfo->mangaId,
                 'mediaId' => $this->mediaId,
@@ -156,7 +165,8 @@ class ScanManga implements ShouldQueue
                 'chapterCover' => $this->mangaCover,
                 'chapterPath' => $this->mangaPath,
                 'chapterType' => $this->mangaType,
-                'browseType' => $this->defaultBrowse
+                'browseType' => $this->defaultBrowse,
+                'subTitle' => $subTitle,
             ];
 
             $chapterAddRes = ChapterSql::add($chapterData);
@@ -229,6 +239,8 @@ class ScanManga implements ShouldQueue
                         }
                     }
 
+                    // 将标题繁简体转换后写入副标题,用于检索
+                    $subTitle = HanziConvert::convert($val->chapterName) . '/' . HanziConvert::convert($val->chapterName, true);
                     // 没有章节 进行新增
                     if (!$hasChapter) {
                         $chapterData = [
@@ -239,7 +251,8 @@ class ScanManga implements ShouldQueue
                             'chapterCover' => $val->chapterCover,
                             'chapterPath' => $val->chapterPath,
                             'chapterType' => $val->chapterType,
-                            'browseType' => $this->defaultBrowse
+                            'browseType' => $this->defaultBrowse,
+                            'subTitle' => $subTitle,
                         ];
 
                         $chapterAddRes = ChapterSql::add($chapterData);

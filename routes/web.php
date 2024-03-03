@@ -71,6 +71,8 @@ Route::post('manga/add', [App\Http\Controllers\Manga::class, 'add']);
 Route::post('manga/update', [App\Http\Controllers\Manga::class, 'update']);
 Route::post('manga/delete', [App\Http\Controllers\Manga::class, 'delete']);
 Route::post('manga/get_by_tags', [App\Http\Controllers\Manga::class, 'get_by_tags']);
+Route::post('manga/get_by_parent_path', [App\Http\Controllers\Manga::class, 'get_by_parent_path']);
+Route::post('manga/get_sub_path', [App\Http\Controllers\Manga::class, 'get_sub_path']);
 Route::post('manga/get_manga_info', [App\Http\Controllers\Manga::class, 'get_manga_info']);
 // 章节
 Route::post('chapter/get', [App\Http\Controllers\Chapter::class, 'get']);

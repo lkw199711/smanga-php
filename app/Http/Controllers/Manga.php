@@ -124,6 +124,32 @@ class Manga extends Controller
         return new JsonResponse($res);
     }
 
+    public function get_by_parent_path(Request $request)
+    {
+        $parentPath = $request->post('parentPath');
+        $page = $request->post('page');
+        $pageSize = $request->post('pageSize');
+        $order = $request->post('order');
+
+        if($parentPath==='null') $parentPath = null;
+        
+        $sqlList = MangaSql::get_by_parent_path($parentPath, $page, $pageSize, $order);
+
+        $res = new ListResponse($sqlList->list, $sqlList->count);
+
+        return new JsonResponse($res);
+    }
+
+    public function get_sub_path(Request $request){
+        $mediaId = $request->post('mediaId');
+
+        $sqlList = MangaSql::get_sub_path($mediaId);
+
+        $res = new ListResponse($sqlList->list, $sqlList->count);
+
+        return new JsonResponse($res);
+    }
+
     /**
      * @description: 获取漫画元数据
      * @param {Request} $request

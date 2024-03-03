@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c61ff82cbf0142a401a48a8161e1595a",
+    "content-hash": "c0a8564312fc653a0441aacd86558f94",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -3102,6 +3102,48 @@
                 }
             ],
             "time": "2021-09-25T23:10:38+00:00"
+        },
+        {
+            "name": "sqhlib/hanzi-convert",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/uutool/hanzi-convert.git",
+                "reference": "ec3afe9ec3fd3af965291ec9cd3f7f1955010da1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/uutool/hanzi-convert/zipball/ec3afe9ec3fd3af965291ec9cd3f7f1955010da1",
+                "reference": "ec3afe9ec3fd3af965291ec9cd3f7f1955010da1",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "sqhlib\\Hanzi\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "sqh"
+                }
+            ],
+            "description": "PHP中文繁简体字转换程序，支持繁体转简体或简体转繁体",
+            "support": {
+                "issues": "https://github.com/uutool/hanzi-convert/issues",
+                "source": "https://github.com/uutool/hanzi-convert/tree/1.1"
+            },
+            "time": "2018-06-29T07:56:45+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -8347,5 +8389,5 @@
         "php": "^7.3|^8.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

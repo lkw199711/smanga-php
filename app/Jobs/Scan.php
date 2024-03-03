@@ -219,7 +219,7 @@ class Scan implements ShouldQueue
                 $posterName = preg_replace('/(.cbr|.cbz|.zip|.7z|.rar|.pdf)/i', '', $posterName);
             };
 
-            array_push($list, new MangaItem($file, $targetPath, $type));
+            array_push($list, new MangaItem($file, $targetPath, $type, $path));
         }
 
         return $list;
@@ -263,11 +263,13 @@ class MangaItem
     public $mangaName;
     public $mangaPath;
     public $mangaType;
+    public $parentPath;
 
-    public function __construct($mangaName, $mangaPath, $mangaType)
+    public function __construct($mangaName, $mangaPath, $mangaType, $parentPath)
     {
         $this->mangaName = $mangaName;
         $this->mangaPath = $mangaPath;
         $this->mangaType = $mangaType;
+        $this->parentPath = $parentPath;
     }
 }
